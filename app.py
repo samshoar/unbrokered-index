@@ -198,7 +198,7 @@ with tab3:
     st.write(f"**Regression Output ({int(st.session_state.sel_year)})** | N = {len(df_reg)} | R² = {model.rsquared:.3f}")
     
     reg_summary = pd.DataFrame({'coef': model.params, 'P>|z|': model.pvalues, 'Lower 95%': model.conf_int()[0], 'Upper 95%': model.conf_int()[1]})
-    st.table(reg_summary.style.format("{:.3f}").applymap(lambda v: 'font-weight: bold; color: #0052FF' if v < 0.05 else '', subset=['P>|z|']))
+    st.table(reg_summary.style.format("{:.3f}").map(lambda v: 'font-weight: bold; color: #0052FF' if v < 0.05 else '', subset=['P>|z|']))
 
     st.divider()
     st.subheader(f"Quadrant Performance Summary ({int(st.session_state.sel_year)})")
