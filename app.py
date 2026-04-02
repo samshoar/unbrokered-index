@@ -191,35 +191,28 @@ with tab3:
     features = ['Mobile_Connectivity', 'Financial_Closedness', 'GDP_per_Capita_PPP', 'Inflation', 'Value_per_Capita_K']
     df_reg = df[df['Year'] == st.session_state.sel_year].copy()
 
+    # Standardize features
     for col in features:
         df_reg[col] = (df_reg[col] - df_reg[col].mean()) / df_reg[col].std()
     
-    model = smf.ols('Crypto_Adoption_Rank ~ ' + ' + '.join(features), data=df_reg).fit(cov_type='HC3')
-    st.write(f"**Regression Output ({int(st.session_state.sel_year)})** | N = {len(df_reg)} | R² = {model.rsquared:.3f}")
-    
-    reg_summary = pd.DataFrame({'coef': model.params, 'P>|z|': model.pvalues, 'Lower 95%': model.conf_int()[0], 'Upper 95%': model.conf_int()[1]})
-    st.table(reg_summary.style.format("{:.3f}").map(lambda v: 'font-weight: bold; color: #0052FF' if v < 0.05 else '', subset=['P>|z|']))
-
-    st.divider()
-    st.subheader(f"Quadrant Performance Summary ({int(st.session_state.sel_year)})")
-    
-    def get_quad(row):
-        t = "High Tech" if row['Mobile_Connectivity'] >= 50 else "Low Tech"
-        f = "Closed" if row['Financial_Closedness_Display'] >= 50 else "Open"
-        return f"{t} / {f}"
-
-    df_stats = df[df['Year'] == st.session_state.sel_year].copy()
-    df_stats['Quadrant'] = df_stats.apply(get_quad, axis=1)
-    stats = df_stats.groupby('Quadrant').agg({'Crypto_Adoption_Rank': ['mean', 'median', 'count']}).reset_index()
-    stats.columns = ['Structural Quadrant', 'Mean Rank', 'Median Rank', 'N']
-    st.table(stats.style.format({'Mean Rank': '{:.1f}', 'Median Rank': '{:.1f}'}).background_gradient(cmap="RdYlGn_r", subset=['Mean Rank']))
-
-    # Load static images from current directory
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    for p in ["full", "active"]:
-        img = os.path.join(current_dir, f"{p}_{int(st.session_state.sel_year)}_composite.png")
-        if os.path.exists(img): st.image(img, use_container_width=True)
-
+    try:
+        model = smf.ols('Crypto_Adoption_Rank ~ ' + ' + '.join(features), data=df_reg).fit(cov_type='HC3')
+        st.write(f"**Regression Output ({int(st.session_state.sel_year)})** | N = {len(df_reg)} | R² = {model.rsquared:.3f}")
+        
+        reg_summary = pd.DataFrame({
+            'coef': model.params, 
+            'P>|z|': model.pvalues, 
+            'Lower 95%': model.conf_int()[0], 
+            'Upper 95%': model.conf_int()[1]
+        })
+        
+        # Use .map() instead of .applymap() for Pandas 2.1+ compatibility
+        st.table(reg_summary.style.format("{:.3f}").map(
+            lambda v: 'font-weight: bold; color: #0052FF' if v < 0.05 else '', 
+            subset=['P>|z|']
+        ))
+    except Exception as e:
+        st.error(f"Could not compute regression for {st.session_state.sel_year}. This usually happens if there isn't enough variance in the data for this specific year.")
 # ==========================================
 # TAB 4: METHODOLOGY
 # ==========================================
