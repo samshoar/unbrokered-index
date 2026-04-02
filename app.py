@@ -182,44 +182,89 @@ with tab2:
     })
 
 # ==========================================
-# TAB 3: DYNAMIC REGRESSIONS
+# TAB 3: DYNAMIC REGRESSIONS & INSIGHTS
 # ==========================================
 with tab3:
-    st.session_state.sel_year = st.radio("🔬 Analysis Year:", sorted(df['Year'].unique(), reverse=True), 
-        index=sorted(df['Year'].unique(), reverse=True).index(st.session_state.sel_year), horizontal=True, key="t3_y")
+    # 1. Year Selector (Synchronized with session state)
+    st.session_state.sel_year = st.radio(
+        "🔬 Select Analysis Year:", sorted(df['Year'].unique(), reverse=True), 
+        index=sorted(df['Year'].unique(), reverse=True).index(st.session_state.sel_year),
+        horizontal=True, key="tab3_year"
+    )
     
     features = ['Mobile_Connectivity', 'Financial_Closedness', 'GDP_per_Capita_PPP', 'Inflation', 'Value_per_Capita_K']
+    
+    # Filter data for the specific selected year
     df_reg = df[df['Year'] == st.session_state.sel_year].copy()
 
-    for col in features:
-        df_reg[col] = (df_reg[col] - df_reg[col].mean()) / df_reg[col].std()
+    # 2. Live Regression Analysis
+    st.subheader(f"Part 1: Econometric Output ({int(st.session_state.sel_year)})")
     
-    model = smf.ols('Crypto_Adoption_Rank ~ ' + ' + '.join(features), data=df_reg).fit(cov_type='HC3')
-    st.write(f"**Regression Output ({int(st.session_state.sel_year)})** | N = {len(df_reg)} | R² = {model.rsquared:.3f}")
-    
-    reg_summary = pd.DataFrame({'coef': model.params, 'P>|z|': model.pvalues, 'Lower 95%': model.conf_int()[0], 'Upper 95%': model.conf_int()[1]})
-    st.table(reg_summary.style.format("{:.3f}").map(lambda v: 'font-weight: bold; color: #0052FF' if v < 0.05 else '', subset=['P>|z|']))
+    try:
+        # Standardize features for this specific year
+        df_reg_std = df_reg.copy()
+        for col in features:
+            df_reg_std[col] = (df_reg_std[col] - df_reg_std[col].mean()) / df_reg_std[col].std()
+        
+        # Run OLS
+        model = smf.ols('Crypto_Adoption_Rank ~ ' + ' + '.join(features), data=df_reg_std).fit(cov_type='HC3')
+        
+        st.write(f"**N = {len(df_reg_std)} observations** | **R-squared = {model.rsquared:.3f}**")
+        
+        reg_summary = pd.DataFrame({
+            'coef': model.params, 
+            'P>|z|': model.pvalues, 
+            'Lower 95%': model.conf_int()[0], 
+            'Upper 95%': model.conf_int()[1]
+        })
+        
+        # Display table with the .map() fix
+        st.table(reg_summary.style.format("{:.3f}").map(
+            lambda v: 'font-weight: bold; color: #0052FF' if v < 0.05 else '', 
+            subset=['P>|z|']
+        ))
+    except Exception as e:
+        st.error(f"Could not compute regression for {st.session_state.sel_year}. Error: {e}")
 
     st.divider()
-    st.subheader(f"Quadrant Performance Summary ({int(st.session_state.sel_year)})")
+
+    # 3. Dynamic Summary Stats Table
+    st.subheader(f"Part 2: Quadrant Performance Summary ({int(st.session_state.sel_year)})")
     
     def get_quad(row):
         t = "High Tech" if row['Mobile_Connectivity'] >= 50 else "Low Tech"
         f = "Closed" if row['Financial_Closedness_Display'] >= 50 else "Open"
         return f"{t} / {f}"
 
-    df_stats = df[df['Year'] == st.session_state.sel_year].copy()
+    df_stats = df_reg.copy()
     df_stats['Quadrant'] = df_stats.apply(get_quad, axis=1)
+    
     stats = df_stats.groupby('Quadrant').agg({'Crypto_Adoption_Rank': ['mean', 'median', 'count']}).reset_index()
     stats.columns = ['Structural Quadrant', 'Mean Rank', 'Median Rank', 'N']
+    
+    # Show the live stats table
     st.table(stats.style.format({'Mean Rank': '{:.1f}', 'Median Rank': '{:.1f}'}).background_gradient(cmap="RdYlGn_r", subset=['Mean Rank']))
 
-    # Load static images from current directory
+    # 4. Vertical Image Stack
+    st.divider()
+    st.subheader(f"Part 3: Visual Frameworks ({int(st.session_state.sel_year)})")
+    
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    for p in ["full", "active"]:
-        img = os.path.join(current_dir, f"{p}_{int(st.session_state.sel_year)}_composite.png")
-        if os.path.exists(img): st.image(img, use_container_width=True)
+    
+    # Global Framework Image
+    full_img = os.path.join(current_dir, f"full_{int(st.session_state.sel_year)}_composite.png")
+    if os.path.exists(full_img):
+        st.image(full_img, use_container_width=True, caption=f"Global Structural Landscape ({int(st.session_state.sel_year)})")
+    else:
+        st.info(f"The 'Full' composite image for {int(st.session_state.sel_year)} was not found.")
 
+    # Tokenization Subset Image
+    active_img = os.path.join(current_dir, f"active_{int(st.session_state.sel_year)}_composite.png")
+    if os.path.exists(active_img):
+        st.image(active_img, use_container_width=True, caption=f"Tokenization Subset Divergence ({int(st.session_state.sel_year)})")
+    else:
+        st.info(f"The 'Active' subset image for {int(st.session_state.sel_year)} was not found.")
+        
 # ==========================================
 # TAB 4: METHODOLOGY
 # ==========================================
