@@ -93,7 +93,7 @@ def load_data():
     
     # Generate Flags and Country_Flag column
     df['Flag'] = df['ISO Code'].apply(get_flag)
-    df['Country_Flag'] = df['Flag'] + " " + df['Country']
+    df['Country Flag'] = df['Flag'] + " " + df['Country']
     
     return df.sort_values(by=['Country'])
 
@@ -136,7 +136,7 @@ with tab1:
 
     # Generate Map (without ISO code text overlay)
     fig_map = px.choropleth(
-        df, locations="ISO Code", color="Archetype", hover_name="Country_Flag",
+        df, locations="ISO Code", color="Archetype", hover_name="Country Flag",
         hover_data={"ISO Code": False, "Index_Score": ':.1f', "regulation": True},
         color_discrete_map=color_map,
         projection="natural earth",
@@ -166,7 +166,7 @@ with tab1:
 # ==========================================
 with tab2:
     # Use Country_Flag instead of Country for the index
-    display_cols = ['Country_Flag', 'Archetype', 'Index_Score', 'regulation', 'Crypto_Adoption_Rank', 'Inflation', 'Financial_Closedness']
+    display_cols = ['Country Flag', 'Archetype', 'Index_Score', 'regulation', 'Crypto_Adoption_Rank', 'Inflation', 'Financial_Closedness']
     df_tab2 = df[display_cols].set_index('Country_Flag').sort_values(by='Index_Score', ascending=False)
     
     st.subheader("Store of Value Necessity Dataset")
