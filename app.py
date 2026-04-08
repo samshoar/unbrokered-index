@@ -163,7 +163,7 @@ with col_logo:
     st.image("https://images.ctfassets.net/sygt3q11s4a9/3x7SlEtglsK24xKCI4klI5/ce347e6caf775dd7d8a7759619577871/1_oOgJJrP9DcjOLpq5YLzsFQ.png?fm=avif&w=1400&h=712&q=65", width=200)
 with col_text:
     st.markdown("<h1 style='color: #0052FF; margin-bottom: 0px;'>From the Unbanked to the Unbrokered</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 1.3rem; color: #2C3E50; margin-top: 5px;'>Tokenized Capital Markets Propensity Insights—Insights into the likely adoption drivers of tokenized capital markets.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 1.3rem; color: #2C3E50; margin-top: 5px;'>Tokenized Capital Markets Propensity—Insights into the likely adoption drivers of tokenized capital markets.</p>", unsafe_allow_html=True)
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🗺️ Visual Dashboard", 
