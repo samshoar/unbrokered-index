@@ -109,7 +109,7 @@ col_logo, col_text = st.columns([1, 4])
 with col_logo:
     st.image("https://images.ctfassets.net/sygt3q11s4a9/3x7SlEtglsK24xKCI4klI5/ce347e6caf775dd7d8a7759619577871/1_oOgJJrP9DcjOLpq5YLzsFQ.png?fm=avif&w=1400&h=712&q=65", width=200)
 with col_text:
-    st.title("Coinbase Institute Unbrokered Index")
+    st.title("The Unbrokered Index")
     st.markdown("Identify the structural drivers pushing populations toward grassroots cryptocurrency adoption.")
 
 tab1, tab2, tab3, tab4 = st.tabs([
