@@ -161,6 +161,41 @@ with tab1:
         m5.metric("Inflation", f"{r['Inflation']:.1f}%")
         st.markdown("</div>", unsafe_allow_html=True)
 
+        st.markdown("#### Structural Comparison (Country vs. Global Average)")
+        
+        metrics_labels = ['Financial Closedness (0-100)', 'Inflation (%)', 'Crypto Adoption Rank (Inverted)*']
+        metrics_keys = ['Financial_Closedness_Display', 'Inflation', 'Crypto_Adoption_Rank']
+        
+        avg_vals = df[metrics_keys].mean()
+        
+        max_rank = df['Crypto_Adoption_Rank'].max()
+        country_vals = list(r[metrics_keys].values)
+        country_vals[2] = max_rank - country_vals[2] + 1
+        
+        avg_vals_list = list(avg_vals.values)
+        avg_vals_list[2] = max_rank - avg_vals_list[2] + 1
+        
+        plot_data = pd.DataFrame({
+            'Metric': metrics_labels * 2,
+            'Value': country_vals + avg_vals_list,
+            'Scope': [st.session_state.sel_country]*3 + ['Global Average']*3
+        })
+
+        fig_horiz = px.bar(
+            plot_data, x='Value', y='Metric', color='Scope', barmode='group',
+            orientation='h',
+            color_discrete_map={st.session_state.sel_country: '#0052FF', 'Global Average': '#E0E5EC'}
+        )
+        fig_horiz.update_layout(
+            plot_bgcolor='white', 
+            xaxis_title="Score / Value",
+            yaxis_title="",
+            legend_title="",
+            margin=dict(t=10)
+        )
+        st.plotly_chart(fig_horiz, use_container_width=True)
+        st.caption("*Crypto Adoption Rank has been inverted for this chart (Larger bar = Better adoption).")
+
 # ==========================================
 # TAB 2: RAW DATA EXPLORER
 # ==========================================
@@ -169,7 +204,7 @@ with tab2:
     display_cols = ['Country_Flag', 'Archetype', 'Index_Score', 'regulation', 'Crypto_Adoption_Rank', 'Inflation', 'Financial_Closedness']
     df_tab2 = df[display_cols].set_index('Country_Flag').sort_values(by='Index_Score', ascending=False)
     
-    st.subheader("Store of Value Necessity Dataset")
+    st.subheader(f"Store of Value Necessity Dataset")
     st.caption("Displaying the Core variables and algorithmic Archetype classifications.")
     
     def style_rows_by_archetype(row):
@@ -203,7 +238,7 @@ with tab3:
     explore how clustering mathematically divides the global landscape into four distinct structural archetypes.
     """)
 
-    # Interactive Plotly Scatter Chart with Custom Labels for Tooltips
+    # Interactive Plotly Scatter Chart
     fig_quad = px.scatter(
         df,
         x='regulation_jittered',
@@ -211,14 +246,6 @@ with tab3:
         color='Archetype',
         color_discrete_map=color_map,
         hover_name='Country_Flag',
-        labels={
-            'Index_Score': 'Index Score',
-            'regulation': 'Regulation',
-            'Inflation': 'Inflation (%)',
-            'Financial_Closedness': 'Financial Closedness',
-            'Crypto_Adoption_Rank': 'Crypto Adoption Rank',
-            'Archetype': 'Archetype'
-        },
         hover_data={
             'regulation_jittered': False,          
             'Archetype': True,                     
