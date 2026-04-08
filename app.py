@@ -3,6 +3,9 @@ import pandas as pd
 import plotly.express as px
 import numpy as np
 import os
+import statsmodels.formula.api as smf
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
 
 # ==========================================
 # 1. PAGE CONFIGURATION & CUSTOM CSS
@@ -34,76 +37,72 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. ISO3 TO FLAG HELPER DICTIONARY
-# ==========================================
-# Maps 3-letter ISO codes to 2-letter codes to generate Unicode flags
-iso3_to_iso2 = {
-    'AFG': 'AF', 'ALB': 'AL', 'DZA': 'DZ', 'AND': 'AD', 'AGO': 'AO', 'ARG': 'AR', 'ARM': 'AM', 'AUS': 'AU', 'AUT': 'AT', 'AZE': 'AZ',
-    'BHS': 'BS', 'BHR': 'BH', 'BGD': 'BD', 'BRB': 'BB', 'BLR': 'BY', 'BEL': 'BE', 'BLZ': 'BZ', 'BEN': 'BJ', 'BTN': 'BT', 'BOL': 'BO',
-    'BIH': 'BA', 'BWA': 'BW', 'BRA': 'BR', 'BRN': 'BN', 'BGR': 'BG', 'BFA': 'BF', 'BDI': 'BI', 'CPV': 'CV', 'KHM': 'KH', 'CMR': 'CM',
-    'CAN': 'CA', 'CAF': 'CF', 'TCD': 'TD', 'CHL': 'CL', 'CHN': 'CN', 'COL': 'CO', 'COM': 'KM', 'COG': 'CG', 'COD': 'CD', 'CRI': 'CR',
-    'CIV': 'CI', 'HRV': 'HR', 'CUB': 'CU', 'CYP': 'CY', 'CZE': 'CZ', 'DNK': 'DK', 'DJI': 'DJ', 'DMA': 'DM', 'DOM': 'DO', 'ECU': 'EC',
-    'EGY': 'EG', 'SLV': 'SV', 'GNQ': 'GQ', 'ERI': 'ER', 'EST': 'EE', 'SWZ': 'SZ', 'ETH': 'ET', 'FJI': 'FJ', 'FIN': 'FI', 'FRA': 'FR',
-    'GAB': 'GA', 'GMB': 'GM', 'GEO': 'GE', 'DEU': 'DE', 'GHA': 'GH', 'GRC': 'GR', 'GRD': 'GD', 'GTM': 'GT', 'GIN': 'GN', 'GNB': 'GW',
-    'GUY': 'GY', 'HTI': 'HT', 'HND': 'HN', 'HUN': 'HU', 'ISL': 'IS', 'IND': 'IN', 'IDN': 'ID', 'IRN': 'IR', 'IRQ': 'IQ', 'IRL': 'IE',
-    'ISR': 'IL', 'ITA': 'IT', 'JAM': 'JM', 'JPN': 'JP', 'JOR': 'JO', 'KAZ': 'KZ', 'KEN': 'KE', 'KIR': 'KI', 'KWT': 'KW', 'KGZ': 'KG',
-    'LAO': 'LA', 'LVA': 'LV', 'LBN': 'LB', 'LSO': 'LS', 'LBR': 'LR', 'LBY': 'LY', 'LIE': 'LI', 'LTU': 'LT', 'LUX': 'LU', 'MDG': 'MG',
-    'MWI': 'MW', 'MYS': 'MY', 'MDV': 'MV', 'MLI': 'ML', 'MLT': 'MT', 'MRT': 'MR', 'MUS': 'MU', 'MEX': 'MX', 'MDA': 'MD', 'MCO': 'MC',
-    'MNG': 'MN', 'MNE': 'ME', 'MAR': 'MA', 'MOZ': 'MZ', 'MMR': 'MM', 'NAM': 'NA', 'NRU': 'NR', 'NPL': 'NP', 'NLD': 'NL', 'NZL': 'NZ',
-    'NIC': 'NI', 'NER': 'NE', 'NGA': 'NG', 'PRK': 'KP', 'MKD': 'MK', 'NOR': 'NO', 'OMN': 'OM', 'PAK': 'PK', 'PLW': 'PW', 'PAN': 'PA',
-    'PNG': 'PG', 'PRY': 'PY', 'PER': 'PE', 'PHL': 'PH', 'POL': 'PL', 'PRT': 'PT', 'QAT': 'QA', 'ROU': 'RO', 'RUS': 'RU', 'RWA': 'RW',
-    'SAU': 'SA', 'SEN': 'SN', 'SRB': 'RS', 'SYC': 'SC', 'SLE': 'SL', 'SGP': 'SG', 'SVK': 'SK', 'SVN': 'SI', 'SLB': 'SB', 'SOM': 'SO', 
-    'ZAF': 'ZA', 'KOR': 'KR', 'SSD': 'SS', 'ESP': 'ES', 'LKA': 'LK', 'SDN': 'SD', 'SUR': 'SR', 'SWE': 'SE', 'CHE': 'CH', 'SYR': 'SY', 
-    'TJK': 'TJ', 'TZA': 'TZ', 'THA': 'TH', 'TLS': 'TL', 'TGO': 'TG', 'TON': 'TO', 'TTO': 'TT', 'TUN': 'TN', 'TUR': 'TR', 'TKM': 'TM', 
-    'UGA': 'UG', 'UKR': 'UA', 'ARE': 'AE', 'GBR': 'GB', 'USA': 'US', 'URY': 'UY', 'UZB': 'UZ', 'VUT': 'VU', 'VEN': 'VE', 'VNM': 'VN', 
-    'YEM': 'YE', 'ZMB': 'ZM', 'ZWE': 'ZW', 'HKG': 'HK', 'MAC': 'MO', 'TWN': 'TW', 'PRI': 'PR', 'PSE': 'PS'
-}
-
-def get_flag(iso3):
-    iso2 = iso3_to_iso2.get(iso3)
-    if not iso2: return "🌐" # Fallback icon
-    # Convert alpha-2 string to Unicode Regional Indicator Symbols (Emoji Flag)
-    return chr(ord(iso2[0]) + 127397) + chr(ord(iso2[1]) + 127397)
-
-# ==========================================
-# 3. DATA LOADING & SESSION STATE
+# 2. DATA LOADING & LIVE CLUSTERING
 # ==========================================
 @st.cache_data
 def load_data():
     current_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    # Load the master dataset
     csv_path = os.path.join(current_dir, "df_unbrokered_master.csv")
     df = pd.read_csv(csv_path)
     
+    # Rename the complex PCA columns back to standard names
     col_mapping = {
         'Financial_Closedness (53.27%)': 'Financial_Closedness',
         'Inflation (1.17%)': 'Inflation',
-        'Crypto_Adoption_Rank (45.56%)': 'Crypto_Adoption_Rank',
-        'Archetype_Label': 'Archetype'
+        'Crypto_Adoption_Rank (45.56%)': 'Crypto_Adoption_Rank'
     }
     df = df.rename(columns=col_mapping)
-    df['Archetype'] = df['Archetype'].replace({'Low Demand': 'Low Demand Economies'})
     
     # Scale Financial Closedness to 0-100 just for the visual bar charts
     c_min, c_max = df['Financial_Closedness'].min(), df['Financial_Closedness'].max()
     df['Financial_Closedness_Display'] = ((df['Financial_Closedness'] - c_min) / (c_max - c_min)) * 100
     
-    # Jitter regulation for scatter plot
+    # Add a jittered Regulation score specifically for the interactive scatter plot
     np.random.seed(42) 
     df['regulation_jittered'] = df['regulation'] + np.random.uniform(-0.25, 0.25, size=len(df))
     
-    # Generate Flags and Country_Flag column
-    df['Flag'] = df['ISO Code'].apply(get_flag)
-    df['Country_Flag'] = df['Flag'] + " " + df['Country']
+    # -------------------------------------------------------------
+    # ORGANIC K-MEANS CLUSTERING (No Hardcoded Quadrant Lines!)
+    # -------------------------------------------------------------
+    # Step 1: Scale the axes so 0-100 doesn't overpower 0-8
+    cluster_data = df[['regulation', 'Index_Score']]
+    scaler_cluster = StandardScaler()
+    cluster_scaled = scaler_cluster.fit_transform(cluster_data)
+
+    # Step 2: Run the algorithm to find 4 clusters based on mathematical distance
+    kmeans = KMeans(n_clusters=4, random_state=42, n_init=10)
+    df['Cluster_ID'] = kmeans.fit_predict(cluster_scaled)
+
+    # Step 3: Identify where the 4 algorithmic centers landed
+    centers = scaler_cluster.inverse_transform(kmeans.cluster_centers_)
+
+    # Step 4: Name the 4 centers based on their location, then map the countries to their respective center
+    cluster_mapping = {}
+    for i, (reg, idx) in enumerate(centers):
+        if reg > 4.0 and idx > 50:
+            cluster_mapping[i] = "Leapfroggers"
+        elif reg <= 4.0 and idx > 50:
+            cluster_mapping[i] = "Sovereign Controllers"
+        elif reg <= 4.0 and idx <= 50:
+            cluster_mapping[i] = "Low Demand Economies"
+        else:
+            cluster_mapping[i] = "Giants"
+
+    # Apply the purely algorithmic labels to the dataset
+    df['Archetype'] = df['Cluster_ID'].map(cluster_mapping)
     
     return df.sort_values(by=['Country'])
 
 df = load_data()
 
+# Session State Initialization
 if 'sel_country' not in st.session_state:
     st.session_state.sel_country = "United States"
 
 # ==========================================
-# 4. APP HEADER
+# 3. APP HEADER
 # ==========================================
 col_logo, col_text = st.columns([1, 4])
 with col_logo:
@@ -127,6 +126,7 @@ with tab1:
     st.session_state.sel_country = st.selectbox("📍 Select Country", y_countries, 
         index=y_countries.index(st.session_state.sel_country) if st.session_state.sel_country in y_countries else 0, key="t1_c")
 
+    # MAP: Colored by the discrete K-Means Archetypes
     color_map = {
         "Sovereign Controllers": "#e74c3c",   
         "Leapfroggers": "#2ecc71",            
@@ -134,15 +134,13 @@ with tab1:
         "Giants": "#3498db"                   
     }
 
-    # Generate Map (without ISO code text overlay)
     fig_map = px.choropleth(
-        df, locations="ISO Code", color="Archetype", hover_name="Country_Flag",
+        df, locations="ISO Code", color="Archetype", hover_name="Country",
         hover_data={"ISO Code": False, "Index_Score": ':.1f', "regulation": True},
         color_discrete_map=color_map,
         projection="natural earth",
         title="Global Macroeconomic Archetypes"
     )
-    
     fig_map.update_layout(margin=dict(l=0, r=0, t=40, b=0))
     st.plotly_chart(fig_map, use_container_width=True)
 
@@ -150,8 +148,9 @@ with tab1:
     if not c_row.empty:
         r = c_row.iloc[0]
         st.divider()
-        st.markdown(f"### {r['Flag']} {st.session_state.sel_country} Snapshot")
+        st.markdown(f"### {st.session_state.sel_country} Snapshot")
         
+        # SNAPSHOT BOX
         st.markdown("<div class='snapshot-box'>", unsafe_allow_html=True)
         m1, m2, m3, m4, m5 = st.columns(5)
         m1.metric("Macro Archetype", f"{r['Archetype']}")
@@ -163,6 +162,7 @@ with tab1:
 
         st.markdown("#### Structural Comparison (Country vs. Global Average)")
         
+        # HORIZONTAL BAR CHART
         metrics_labels = ['Financial Closedness (0-100)', 'Inflation (%)', 'Crypto Adoption Rank (Inverted)*']
         metrics_keys = ['Financial_Closedness_Display', 'Inflation', 'Crypto_Adoption_Rank']
         
@@ -200,22 +200,32 @@ with tab1:
 # TAB 2: RAW DATA EXPLORER
 # ==========================================
 with tab2:
-    # Use Country_Flag instead of Country for the index
-    display_cols = ['Country_Flag', 'Archetype', 'Index_Score', 'regulation', 'Crypto_Adoption_Rank', 'Inflation', 'Financial_Closedness']
-    df_tab2 = df[display_cols].set_index('Country_Flag').sort_values(by='Index_Score', ascending=False)
+    display_cols = ['Country', 'Archetype', 'Index_Score', 'regulation', 'Crypto_Adoption_Rank', 'Inflation', 'Financial_Closedness']
+    df_tab2 = df[display_cols].set_index('Country').sort_values(by='Index_Score', ascending=False)
     
     st.subheader(f"Store of Value Necessity Dataset")
     st.caption("Displaying the Core variables and algorithmic Archetype classifications.")
     
+    # -------------------------------------------------------------
+    # CUSTOM PANDAS STYLER: DYNAMIC ROW COLORS BY ARCHETYPE
+    # -------------------------------------------------------------
     def style_rows_by_archetype(row):
         arch = row['Archetype']
-        if arch == 'Sovereign Controllers': color = '#FDEAEA' 
-        elif arch == 'Leapfroggers': color = '#EAF8F1' 
-        elif arch == 'Low Demand Economies': color = '#F4EDF7' 
-        elif arch == 'Giants': color = '#EAF3FB' 
-        else: color = '#FFFFFF' 
+        # We use very subtle, highly readable pastel versions of the cluster colors
+        if arch == 'Sovereign Controllers':
+            color = '#FDEAEA' # Light Red
+        elif arch == 'Leapfroggers':
+            color = '#EAF8F1' # Light Green
+        elif arch == 'Low Demand Economies':
+            color = '#F4EDF7' # Light Purple
+        elif arch == 'Giants':
+            color = '#EAF3FB' # Light Blue
+        else:
+            color = '#FFFFFF' # Fallback white
+        
         return [f'background-color: {color}; color: #2C3E50'] * len(row)
 
+    # Apply the styling function row-by-row (axis=1)
     styled_df = df_tab2.style.apply(style_rows_by_archetype, axis=1)
     
     st.dataframe(styled_df, use_container_width=True, height=600, column_config={
@@ -237,30 +247,35 @@ with tab3:
     we transition from abstract macroeconomic theory to an actionable geopolitical strategy map. Hover over the points below to 
     explore how clustering mathematically divides the global landscape into four distinct structural archetypes.
     """)
+    
+    color_map = {
+        "Sovereign Controllers": "#e74c3c",   
+        "Leapfroggers": "#2ecc71",            
+        "Low Demand Economies": "#9b59b6",    
+        "Giants": "#3498db"                   
+    }
 
-    # Interactive Plotly Scatter Chart
     fig_quad = px.scatter(
         df,
         x='regulation_jittered',
         y='Index_Score',
         color='Archetype',
         color_discrete_map=color_map,
-        hover_name='Country_Flag',
+        hover_name='Country',
         hover_data={
             'regulation_jittered': False,          
-            'Archetype': True,                     
+            'regulation': True,                    
             'Index_Score': ':.1f',
-            'regulation': ':.1f',
-            'Inflation': ':.1f',
-            'Financial_Closedness': ':.2f',
-            'Crypto_Adoption_Rank': True
+            'Archetype': False                     
         },
         size_max=15
     )
 
+    fig_quad.add_hline(y=50, line_dash="dash", line_color="gray", opacity=0.4)
+    fig_quad.add_vline(x=4.0, line_dash="dash", line_color="gray", opacity=0.4)
+
     fig_quad.update_traces(marker=dict(size=14, line=dict(width=1, color='black')), opacity=0.85)
 
-    # Quadrant text labels
     fig_quad.add_annotation(x=2.0, y=102, text="<b>Sovereign Controllers</b>", showarrow=False, font=dict(color="#e74c3c", size=15))
     fig_quad.add_annotation(x=6.0, y=102, text="<b>Leapfroggers</b>", showarrow=False, font=dict(color="#2ecc71", size=15))
     fig_quad.add_annotation(x=2.0, y=-2, text="<b>Low Demand Economies</b>", showarrow=False, font=dict(color="#9b59b6", size=15))
