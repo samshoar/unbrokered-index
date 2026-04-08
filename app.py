@@ -19,7 +19,7 @@ st.set_page_config(
 
 st.markdown("""
     <style>
-        h1, h2, h3 { color: #0052FF !important; font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Inter', sans-serif; }
         [data-testid="stMetricValue"] { color: #0052FF !important; font-weight: 800; font-size: 1.8rem;}
         .stTabs [aria-selected="true"] {
             background-color: #F0F4F8;
@@ -83,7 +83,6 @@ def load_data():
     csv_path = os.path.join(current_dir, "df_unbrokered_master.csv")
     df = pd.read_csv(csv_path)
     
-    # DYNAMIC COLUMN RENAMING (Protects against future PCA percentage changes)
     col_mapping = {'Archetype_Label': 'Archetype'}
     for col in df.columns:
         if 'Financial_Closedness' in col: col_mapping[col] = 'Financial_Closedness'
@@ -163,14 +162,15 @@ col_logo, col_text = st.columns([1, 4])
 with col_logo:
     st.image("https://images.ctfassets.net/sygt3q11s4a9/3x7SlEtglsK24xKCI4klI5/ce347e6caf775dd7d8a7759619577871/1_oOgJJrP9DcjOLpq5YLzsFQ.png?fm=avif&w=1400&h=712&q=65", width=200)
 with col_text:
-    st.title("The Tokenized Equities Propensity Index")
-    st.markdown("Identify the structural drivers pushing populations toward grassroots cryptocurrency adoption.")
+    # Updated to feature the clean title and the non-bold subtitle beneath it
+    st.markdown("<h1 style='color: #0052FF; margin-bottom: 0px;'>From the Unbanked to the Unbrokered</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 1.3rem; color: #2C3E50; margin-top: 5px;'>Tokenized Capital Markets Propensity Insights—Insights into the likely adoption drivers of tokenized capital markets.</p>", unsafe_allow_html=True)
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🗺️ Visual Dashboard", 
     "📊 Raw Data Explorer", 
     "🧩 Macro Archetypes",
-    "🎛️ Policy Simulator",
+    "🎛️ The \"What-If\" Simulator",
     "📋 Methodology"
 ])
 
@@ -178,25 +178,44 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # TAB 1: VISUAL DASHBOARD
 # ==========================================
 with tab1:
-    y_countries = sorted(df['Country'].unique())
-    st.session_state.sel_country = st.selectbox("📍 Select Country", y_countries, 
-        index=y_countries.index(st.session_state.sel_country) if st.session_state.sel_country in y_countries else 0, key="t1_c")
-
     fig_map = px.choropleth(
         df, locations="ISO Code", color="Archetype", hover_name="Country_Flag",
-        hover_data={"ISO Code": False, "Index_Score": ':.1f', "regulation": True},
+        labels={
+            'Index_Score': 'SoV Index Score', 
+            'regulation': 'Regulation', 
+            'Inflation': 'Inflation (%)', 
+            'Financial_Closedness': 'Financial Closedness', 
+            'Crypto_Adoption_Rank': 'Adoption Rank',
+            'Archetype': 'Archetype'
+        },
+        hover_data={
+            "ISO Code": False, 
+            "Archetype": True,
+            "Index_Score": ':.1f', 
+            "regulation": ':.1f', 
+            "Inflation": ':.1f', 
+            "Financial_Closedness": ':.2f', 
+            "Crypto_Adoption_Rank": True
+        },
         color_discrete_map=color_map,
         projection="natural earth",
-        title="Global Macroeconomic Archetypes"
+        title="<b>Propensity Archetypes</b>"
     )
     
-    fig_map.update_layout(margin=dict(l=0, r=0, t=40, b=0))
+    fig_map.update_layout(margin=dict(l=0, r=0, t=50, b=0))
     st.plotly_chart(fig_map, use_container_width=True)
+
+    st.divider()
+
+    y_countries = sorted(df['Country'].unique())
+    st.session_state.sel_country = st.selectbox(
+        "📍 Select Country for Deep Dive Snapshot", y_countries, 
+        index=y_countries.index(st.session_state.sel_country) if st.session_state.sel_country in y_countries else 0, key="t1_c"
+    )
 
     c_row = df[df['Country'] == st.session_state.sel_country]
     if not c_row.empty:
         r = c_row.iloc[0]
-        st.divider()
         st.markdown(f"### {r['Flag']} {st.session_state.sel_country} Snapshot")
         
         st.markdown("<div class='snapshot-box'>", unsafe_allow_html=True)
@@ -215,7 +234,7 @@ with tab2:
     display_cols = ['Country_Flag', 'Archetype', 'Index_Score', 'regulation', 'Crypto_Adoption_Rank', 'Inflation', 'Financial_Closedness']
     df_tab2 = df[display_cols].set_index('Country_Flag').sort_values(by='Index_Score', ascending=False)
     
-    st.subheader("Store of Value Necessity Dataset")
+    st.subheader("Archetypes and Variables")
     st.caption("Displaying the Core variables and algorithmic Archetype classifications.")
     
     def style_rows_by_archetype(row):
@@ -229,7 +248,7 @@ with tab2:
 
     styled_df = df_tab2.style.apply(style_rows_by_archetype, axis=1)
     
-    st.dataframe(styled_df, use_container_width=True, height=600, column_config={
+    st.dataframe(styled_df, use_container_width=True, height=500, column_config={
         "Archetype": st.column_config.TextColumn("🏛️ Archetype"),
         "Index_Score": st.column_config.ProgressColumn("📊 SoV Index Score", min_value=0, max_value=100, format="%.1f"),
         "regulation": st.column_config.NumberColumn("⚖️ Regulation (0-8)", format="%.1f"),
@@ -238,11 +257,21 @@ with tab2:
         "Financial_Closedness": st.column_config.NumberColumn("🏦 Raw Closedness Score", format="%.2f")
     })
 
+    st.divider()
+    st.markdown("#### Variable Definitions")
+    st.markdown("""
+    * **SoV Index Score:** A composite 0-100 score determined by our PCA algorithm. It measures a population's macroeconomic necessity for unbrokered assets (100 = Highest Necessity).
+    * **Regulation (0-8):** Tracks the maturity, legality, and comprehensiveness of a nation's formal digital asset frameworks (Atlantic Council).
+    * **Adoption Rank:** Real-world utility and adoption of digital assets by everyday retail users (Chainalysis). *Rank 1 = Highest Adoption.*
+    * **Inflation (%):** The annual percentage change in the cost of domestically manufactured goods and services via the GDP deflator (World Bank).
+    * **Raw Closedness Score:** Measures a country's capital controls and regulatory restrictions on cross-border financial transactions. Adapted from the Chinn-Ito Financial Openness Index, where higher positive scores denote strict capital controls and closed markets.
+    """)
+
 # ==========================================
 # TAB 3: MACRO ARCHETYPES (INTERACTIVE)
 # ==========================================
 with tab3:
-    st.header("Global Macroeconomic Archetypes")
+    st.header("Propensity Archetypes in Quadrants")
     st.markdown("By mapping the **Store of Value Necessity Index** (Y-Axis) against the **Formal Regulatory Framework Score** (X-Axis), we transition from abstract macroeconomic theory to an actionable geopolitical strategy map.")
 
     fig_quad = px.scatter(
@@ -301,8 +330,11 @@ with tab3:
 # TAB 4: POLICY SIMULATOR (WHAT-IF)
 # ==========================================
 with tab4:
-    st.header("The \"What-If\" Policy Simulator")
-    st.markdown("Act as a macroeconomic forecaster. Select a country and dynamically shift its core parameters—or override the global PCA weights—to see how structural shocks mathematically redefine the global landscape.")
+    st.header("The \"What-If\" Simulator")
+    st.markdown("""
+    Our weights were determined by **Principal Component Analysis (PCA)**. PCA is a machine learning algorithm that mathematically discovers the true variance within the global economy to automatically weight each variable without human bias. To see the effects of changes in these inputs, select a country and dynamically shift its core parameters—or override the global PCA weights—to see how these changes mathematically redefine that country within the global landscape.
+    """)
+    st.divider()
     
     sim_country = st.selectbox("Select Country to Simulate", sorted(df['Country'].unique()), key="sim_c")
     r_sim = df[df['Country'] == sim_country].iloc[0]
@@ -315,19 +347,31 @@ with tab4:
     with col_shock:
         st.subheader("1. Shock the System")
         st.caption(f"Adjust the specific metrics for {sim_country}.")
-        sim_reg = st.slider("Formal Regulation Framework (0-8)", 0.0, 8.0, float(r_sim['regulation']), 0.5)
-        sim_inf = st.slider("Inflation (%)", -5.0, 150.0, float(r_sim['Inflation']), 1.0)
-        sim_close = st.slider("Capital Controls / Closedness Score (-2.5 to 2.5)", -2.5, 2.5, float(r_sim['Financial_Closedness']), 0.1)
-        sim_adopt = st.slider("Crypto Adoption Rank (1 = Highest)", 1, 150, int(r_sim['Crypto_Adoption_Rank']), 1)
+        
+        sim_reg = st.slider("Formal Regulation Framework (0-8)", 0.0, 8.0, float(r_sim['regulation']), 0.5,
+                            help="Tracks the maturity, legality, and comprehensiveness of a nation's formal digital asset frameworks (Atlantic Council).")
+        
+        sim_inf = st.slider("Inflation (%)", -5.0, 150.0, float(r_sim['Inflation']), 1.0,
+                            help="The annual percentage change in the cost of domestically manufactured goods and services via the GDP deflator (World Bank).")
+        
+        sim_close = st.slider("Capital Controls / Closedness Score (-2.5 to 2.5)", -2.5, 2.5, float(r_sim['Financial_Closedness']), 0.1, 
+                              help="Adapted from the Chinn-Ito Index. -2.5 represents fully open capital markets, while 2.5 represents strict capital controls (closed economies).")
+        
+        sim_adopt = st.slider("Crypto Adoption Rank (1 = Highest)", 1, 150, int(r_sim['Crypto_Adoption_Rank']), 1,
+                              help="Real-world utility and adoption of digital assets by everyday retail users (Chainalysis). Rank 1 = Highest Adoption.")
         
     with col_weights:
         st.subheader("2. Override Global Index Weights")
         st.caption("Shift the PCA variance weights. The system caps combinations to strictly equal 100%.")
         
-        w_close = st.slider("Weight: Capital Controls (%)", 0, 100, 53)
-        w_adopt = st.slider("Weight: Grassroots Adoption (%)", 0, 100 - w_close, min(46, 100 - w_close))
+        w_close = st.slider("Weight: Capital Controls (%)", 0, 100, 53,
+                            help="Override the PCA variance weight for Financial Closedness/Capital Controls.")
+        
+        w_adopt = st.slider("Weight: Grassroots Adoption (%)", 0, 100 - w_close, min(46, 100 - w_close),
+                            help="Override the PCA variance weight for Grassroots Crypto Adoption.")
+        
         w_inf = 100 - w_close - w_adopt
-        st.info(f"**Weight: Inflation (%)**: `{w_inf}%`\n\n*(Auto-calculated remainder to ensure a perfect 100% distribution)*")
+        st.info(f"**Weight: Inflation (%)**: `{w_inf}%`\n\n*(Auto-calculated remainder to ensure a perfect 100% distribution. Represents the override weight for Inflation)*")
 
     # ---------------------------------------------------------
     # MATH & ALGORITHM RECALCULATIONS
