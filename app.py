@@ -12,7 +12,7 @@ from sklearn.decomposition import PCA
 # 1. PAGE CONFIGURATION & CUSTOM CSS
 # ==========================================
 st.set_page_config(
-    page_title="Coinbase Institute Unbrokered Index", 
+    page_title="The Tokenized Equities Propensity Index", 
     page_icon="©️", 
     layout="wide"
 )
@@ -71,7 +71,7 @@ color_map = {
     "Sovereign Controllers": "#e74c3c",   
     "Leapfroggers": "#2ecc71",            
     "Low Demand Economies": "#9b59b6",    
-    "Giants": "#3498db"                   
+    "Financial Hubs": "#3498db"                   
 }
 
 # ==========================================
@@ -90,7 +90,7 @@ def load_data():
         'Archetype_Label': 'Archetype'
     }
     df = df.rename(columns=col_mapping)
-    df['Archetype'] = df['Archetype'].replace({'Low Demand': 'Low Demand Economies'})
+    df['Archetype'] = df['Archetype'].replace({'Low Demand': 'Low Demand Economies', 'Giants': 'Financial Hubs'})
     
     c_min, c_max = df['Financial_Closedness'].min(), df['Financial_Closedness'].max()
     df['Financial_Closedness_Display'] = ((df['Financial_Closedness'] - c_min) / (c_max - c_min)) * 100
@@ -139,7 +139,7 @@ if 'pca_models' not in st.session_state:
         elif reg <= 4.0 and idx <= 50:
             cluster_mapping[i] = "Low Demand Economies"
         else:
-            cluster_mapping[i] = "Giants"
+            cluster_mapping[i] = "Financial Hubs"
 
     # Strictly apply the mathematically defined labels to the dataset
     df['Archetype'] = kmeans.predict(cluster_scaled)
@@ -166,7 +166,7 @@ col_logo, col_text = st.columns([1, 4])
 with col_logo:
     st.image("https://images.ctfassets.net/sygt3q11s4a9/3x7SlEtglsK24xKCI4klI5/ce347e6caf775dd7d8a7759619577871/1_oOgJJrP9DcjOLpq5YLzsFQ.png?fm=avif&w=1400&h=712&q=65", width=200)
 with col_text:
-    st.title("Coinbase Institute Unbrokered Index")
+    st.title("The Tokenized Equities Propensity Index")
     st.markdown("Identify the structural drivers pushing populations toward grassroots cryptocurrency adoption.")
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
@@ -226,7 +226,7 @@ with tab2:
         if arch == 'Sovereign Controllers': color = '#FDEAEA' 
         elif arch == 'Leapfroggers': color = '#EAF8F1' 
         elif arch == 'Low Demand Economies': color = '#F4EDF7' 
-        elif arch == 'Giants': color = '#EAF3FB' 
+        elif arch == 'Financial Hubs': color = '#EAF3FB' 
         else: color = '#FFFFFF' 
         return [f'background-color: {color}; color: #2C3E50'] * len(row)
 
@@ -261,7 +261,7 @@ with tab3:
     fig_quad.add_annotation(x=2.0, y=102, text="<b>Sovereign Controllers</b>", showarrow=False, font=dict(color="#e74c3c", size=15))
     fig_quad.add_annotation(x=6.0, y=102, text="<b>Leapfroggers</b>", showarrow=False, font=dict(color="#2ecc71", size=15))
     fig_quad.add_annotation(x=2.0, y=-2, text="<b>Low Demand Economies</b>", showarrow=False, font=dict(color="#9b59b6", size=15))
-    fig_quad.add_annotation(x=6.0, y=-2, text="<b>Giants</b>", showarrow=False, font=dict(color="#3498db", size=15))
+    fig_quad.add_annotation(x=6.0, y=-2, text="<b>Financial Hubs</b>", showarrow=False, font=dict(color="#3498db", size=15))
 
     fig_quad.update_layout(
         xaxis_title="<b>Formal Regulatory Framework Score (0-8)</b>",
@@ -295,7 +295,7 @@ with tab3:
         **Vibe: Survival + Market-Driven** Leapfroggers are environments experiencing severe fiat devaluation or extreme financial closedness. In these regions, unbrokered assets are not a speculative vehicle, but a literal "life raft." Everyday citizens bypass failing legacy banking systems entirely, organically adopting stablecoins and decentralized rails to protect their wealth. Crucially, the government responds to this undeniable grassroots reality by drafting accommodating regulations to capture, rather than combat, the capital flow.
         """)
 
-        st.markdown("### 🔵 Giants")
+        st.markdown("### 🔵 Financial Hubs")
         st.markdown("""
         **Vibe: Optimization + Institutional Arbitrage** These are wealthy, stable, financial hubs. Because inflation is low and capital mobility is high, retail demand for "life raft" crypto is negligible. Instead, the push for tokenization in these jurisdictions is entirely institutional. Governments here write crystal-clear, proactive regulations designed to lure global capital and traditional finance (TradFi) institutions seeking efficiency gains, operational optimization, and jurisdictional arbitrage.
         """)
@@ -419,7 +419,7 @@ with tab5:
     
     st.markdown("### 1. Data Sourcing")
     st.markdown("""
-    The Unbrokered Index synthesizes data from five premier global institutions to ensure a comprehensive macroeconomic snapshot:
+    The Tokenized Equities Propensity Index synthesizes data from five premier global institutions to ensure a comprehensive macroeconomic snapshot:
     * **Grassroots Crypto Adoption:** Sourced from *Chainalysis*. Evaluates the real-world utility and adoption of digital assets by everyday retail users (ranked 1 to 150).
     * **Financial Closedness:** Adapted from the *Chinn-Ito Financial Openness Index*. The index measures a country's capital controls and regulatory restrictions on cross-border financial transactions. The score is mathematically inverted to measure "Closedness."
     * **Inflation (GDP Deflator):** Sourced from the *World Bank*. Measures the annual percentage change in the cost of all newly produced, domestically manufactured goods and services.
@@ -446,7 +446,7 @@ with tab5:
 
     st.markdown("### 3. K-Means Clustering (Archetype Classification)")
     st.markdown("""
-    To prevent human bias when categorizing countries into the four geopolitical archetypes (Giants, Leapfroggers, Sovereign Controllers, Low Demand Economies), we utilized **K-Means Clustering**.
+    To prevent human bias when categorizing countries into the four geopolitical archetypes (Financial Hubs, Leapfroggers, Sovereign Controllers, Low Demand Economies), we utilized **K-Means Clustering**.
     
     * **The Algorithm:** We instructed a K-Means algorithm to evaluate the two-dimensional space mapping our PCA Index Score (Y-Axis) against the Formal Regulatory Score (X-Axis). 
     * **Standardized Distances:** Before clustering, both axes were standardized. This ensured that the 0-100 scale of the Y-axis did not mathematically overpower the 0-8 scale of the X-axis during distance calculations.
