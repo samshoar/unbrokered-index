@@ -37,7 +37,37 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. DATA LOADING & LIVE CLUSTERING
+# 2. ISO3 TO FLAG HELPER DICTIONARY
+# ==========================================
+iso3_to_iso2 = {
+    'AFG': 'AF', 'ALB': 'AL', 'DZA': 'DZ', 'AND': 'AD', 'AGO': 'AO', 'ARG': 'AR', 'ARM': 'AM', 'AUS': 'AU', 'AUT': 'AT', 'AZE': 'AZ',
+    'BHS': 'BS', 'BHR': 'BH', 'BGD': 'BD', 'BRB': 'BB', 'BLR': 'BY', 'BEL': 'BE', 'BLZ': 'BZ', 'BEN': 'BJ', 'BTN': 'BT', 'BOL': 'BO',
+    'BIH': 'BA', 'BWA': 'BW', 'BRA': 'BR', 'BRN': 'BN', 'BGR': 'BG', 'BFA': 'BF', 'BDI': 'BI', 'CPV': 'CV', 'KHM': 'KH', 'CMR': 'CM',
+    'CAN': 'CA', 'CAF': 'CF', 'TCD': 'TD', 'CHL': 'CL', 'CHN': 'CN', 'COL': 'CO', 'COM': 'KM', 'COG': 'CG', 'COD': 'CD', 'CRI': 'CR',
+    'CIV': 'CI', 'HRV': 'HR', 'CUB': 'CU', 'CYP': 'CY', 'CZE': 'CZ', 'DNK': 'DK', 'DJI': 'DJ', 'DMA': 'DM', 'DOM': 'DO', 'ECU': 'EC',
+    'EGY': 'EG', 'SLV': 'SV', 'GNQ': 'GQ', 'ERI': 'ER', 'EST': 'EE', 'SWZ': 'SZ', 'ETH': 'ET', 'FJI': 'FJ', 'FIN': 'FI', 'FRA': 'FR',
+    'GAB': 'GA', 'GMB': 'GM', 'GEO': 'GE', 'DEU': 'DE', 'GHA': 'GH', 'GRC': 'GR', 'GRD': 'GD', 'GTM': 'GT', 'GIN': 'GN', 'GNB': 'GW',
+    'GUY': 'GY', 'HTI': 'HT', 'HND': 'HN', 'HUN': 'HU', 'ISL': 'IS', 'IND': 'IN', 'IDN': 'ID', 'IRN': 'IR', 'IRQ': 'IQ', 'IRL': 'IE',
+    'ISR': 'IL', 'ITA': 'IT', 'JAM': 'JM', 'JPN': 'JP', 'JOR': 'JO', 'KAZ': 'KZ', 'KEN': 'KE', 'KIR': 'KI', 'KWT': 'KW', 'KGZ': 'KG',
+    'LAO': 'LA', 'LVA': 'LV', 'LBN': 'LB', 'LSO': 'LS', 'LBR': 'LR', 'LBY': 'LY', 'LIE': 'LI', 'LTU': 'LT', 'LUX': 'LU', 'MDG': 'MG',
+    'MWI': 'MW', 'MYS': 'MY', 'MDV': 'MV', 'MLI': 'ML', 'MLT': 'MT', 'MRT': 'MR', 'MUS': 'MU', 'MEX': 'MX', 'MDA': 'MD', 'MCO': 'MC',
+    'MNG': 'MN', 'MNE': 'ME', 'MAR': 'MA', 'MOZ': 'MZ', 'MMR': 'MM', 'NAM': 'NA', 'NRU': 'NR', 'NPL': 'NP', 'NLD': 'NL', 'NZL': 'NZ',
+    'NIC': 'NI', 'NER': 'NE', 'NGA': 'NG', 'PRK': 'KP', 'MKD': 'MK', 'NOR': 'NO', 'OMN': 'OM', 'PAK': 'PK', 'PLW': 'PW', 'PAN': 'PA',
+    'PNG': 'PG', 'PRY': 'PY', 'PER': 'PE', 'PHL': 'PH', 'POL': 'PL', 'PRT': 'PT', 'QAT': 'QA', 'ROU': 'RO', 'RUS': 'RU', 'RWA': 'RW',
+    'SAU': 'SA', 'SEN': 'SN', 'SRB': 'RS', 'SYC': 'SC', 'SLE': 'SL', 'SGP': 'SG', 'SVK': 'SK', 'SVN': 'SI', 'SLB': 'SB', 'SOM': 'SO', 
+    'ZAF': 'ZA', 'KOR': 'KR', 'SSD': 'SS', 'ESP': 'ES', 'LKA': 'LK', 'SDN': 'SD', 'SUR': 'SR', 'SWE': 'SE', 'CHE': 'CH', 'SYR': 'SY', 
+    'TJK': 'TJ', 'TZA': 'TZ', 'THA': 'TH', 'TLS': 'TL', 'TGO': 'TG', 'TON': 'TO', 'TTO': 'TT', 'TUN': 'TN', 'TUR': 'TR', 'TKM': 'TM', 
+    'UGA': 'UG', 'UKR': 'UA', 'ARE': 'AE', 'GBR': 'GB', 'USA': 'US', 'URY': 'UY', 'UZB': 'UZ', 'VUT': 'VU', 'VEN': 'VE', 'VNM': 'VN', 
+    'YEM': 'YE', 'ZMB': 'ZM', 'ZWE': 'ZW', 'HKG': 'HK', 'MAC': 'MO', 'TWN': 'TW', 'PRI': 'PR', 'PSE': 'PS'
+}
+
+def get_flag(iso3):
+    iso2 = iso3_to_iso2.get(iso3)
+    if not iso2: return "🌐" 
+    return chr(ord(iso2[0]) + 127397) + chr(ord(iso2[1]) + 127397)
+
+# ==========================================
+# 3. DATA LOADING & LIVE CLUSTERING
 # ==========================================
 @st.cache_data
 def load_data():
@@ -63,6 +93,10 @@ def load_data():
     np.random.seed(42) 
     df['regulation_jittered'] = df['regulation'] + np.random.uniform(-0.25, 0.25, size=len(df))
     
+    # Generate Flags and Country_Flag column
+    df['Flag'] = df['ISO Code'].apply(get_flag)
+    df['Country_Flag'] = df['Flag'] + " " + df['Country']
+
     # -------------------------------------------------------------
     # ORGANIC K-MEANS CLUSTERING (No Hardcoded Quadrant Lines!)
     # -------------------------------------------------------------
@@ -93,6 +127,11 @@ def load_data():
     # Apply the purely algorithmic labels to the dataset
     df['Archetype'] = df['Cluster_ID'].map(cluster_mapping)
     
+    # --- MANUAL OVERRIDES ---
+    # The US mathematically clusters as a Leapfrogger due to massive retail adoption numbers, 
+    # but geopolitically acts as an institutional Giant. We enforce this classification here.
+    df.loc[df['Country'] == 'United States', 'Archetype'] = 'Giants'
+    
     return df.sort_values(by=['Country'])
 
 df = load_data()
@@ -102,7 +141,7 @@ if 'sel_country' not in st.session_state:
     st.session_state.sel_country = "United States"
 
 # ==========================================
-# 3. APP HEADER
+# 4. APP HEADER
 # ==========================================
 col_logo, col_text = st.columns([1, 4])
 with col_logo:
@@ -135,7 +174,7 @@ with tab1:
     }
 
     fig_map = px.choropleth(
-        df, locations="ISO Code", color="Archetype", hover_name="Country",
+        df, locations="ISO Code", color="Archetype", hover_name="Country_Flag",
         hover_data={"ISO Code": False, "Index_Score": ':.1f', "regulation": True},
         color_discrete_map=color_map,
         projection="natural earth",
@@ -148,7 +187,7 @@ with tab1:
     if not c_row.empty:
         r = c_row.iloc[0]
         st.divider()
-        st.markdown(f"### {st.session_state.sel_country} Snapshot")
+        st.markdown(f"### {r['Flag']} {st.session_state.sel_country} Snapshot")
         
         # SNAPSHOT BOX
         st.markdown("<div class='snapshot-box'>", unsafe_allow_html=True)
@@ -160,48 +199,12 @@ with tab1:
         m5.metric("Inflation", f"{r['Inflation']:.1f}%")
         st.markdown("</div>", unsafe_allow_html=True)
 
-        st.markdown("#### Structural Comparison (Country vs. Global Average)")
-        
-        # HORIZONTAL BAR CHART
-        metrics_labels = ['Financial Closedness (0-100)', 'Inflation (%)', 'Crypto Adoption Rank (Inverted)*']
-        metrics_keys = ['Financial_Closedness_Display', 'Inflation', 'Crypto_Adoption_Rank']
-        
-        avg_vals = df[metrics_keys].mean()
-        
-        max_rank = df['Crypto_Adoption_Rank'].max()
-        country_vals = list(r[metrics_keys].values)
-        country_vals[2] = max_rank - country_vals[2] + 1
-        
-        avg_vals_list = list(avg_vals.values)
-        avg_vals_list[2] = max_rank - avg_vals_list[2] + 1
-        
-        plot_data = pd.DataFrame({
-            'Metric': metrics_labels * 2,
-            'Value': country_vals + avg_vals_list,
-            'Scope': [st.session_state.sel_country]*3 + ['Global Average']*3
-        })
-
-        fig_horiz = px.bar(
-            plot_data, x='Value', y='Metric', color='Scope', barmode='group',
-            orientation='h',
-            color_discrete_map={st.session_state.sel_country: '#0052FF', 'Global Average': '#E0E5EC'}
-        )
-        fig_horiz.update_layout(
-            plot_bgcolor='white', 
-            xaxis_title="Score / Value",
-            yaxis_title="",
-            legend_title="",
-            margin=dict(t=10)
-        )
-        st.plotly_chart(fig_horiz, use_container_width=True)
-        st.caption("*Crypto Adoption Rank has been inverted for this chart (Larger bar = Better adoption).")
-
 # ==========================================
 # TAB 2: RAW DATA EXPLORER
 # ==========================================
 with tab2:
-    display_cols = ['Country', 'Archetype', 'Index_Score', 'regulation', 'Crypto_Adoption_Rank', 'Inflation', 'Financial_Closedness']
-    df_tab2 = df[display_cols].set_index('Country').sort_values(by='Index_Score', ascending=False)
+    display_cols = ['Country_Flag', 'Archetype', 'Index_Score', 'regulation', 'Crypto_Adoption_Rank', 'Inflation', 'Financial_Closedness']
+    df_tab2 = df[display_cols].set_index('Country_Flag').sort_values(by='Index_Score', ascending=False)
     
     st.subheader(f"Store of Value Necessity Dataset")
     st.caption("Displaying the Core variables and algorithmic Archetype classifications.")
@@ -261,18 +264,26 @@ with tab3:
         y='Index_Score',
         color='Archetype',
         color_discrete_map=color_map,
-        hover_name='Country',
+        hover_name='Country_Flag',
+        labels={
+            'Index_Score': 'Index Score',
+            'regulation': 'Regulation',
+            'Inflation': 'Inflation (%)',
+            'Financial_Closedness': 'Financial Closedness',
+            'Crypto_Adoption_Rank': 'Crypto Adoption Rank',
+            'Archetype': 'Archetype'
+        },
         hover_data={
             'regulation_jittered': False,          
-            'regulation': True,                    
+            'Archetype': True,                     
             'Index_Score': ':.1f',
-            'Archetype': False                     
+            'regulation': ':.1f',
+            'Inflation': ':.1f',
+            'Financial_Closedness': ':.2f',
+            'Crypto_Adoption_Rank': True
         },
         size_max=15
     )
-
-    fig_quad.add_hline(y=50, line_dash="dash", line_color="gray", opacity=0.4)
-    fig_quad.add_vline(x=4.0, line_dash="dash", line_color="gray", opacity=0.4)
 
     fig_quad.update_traces(marker=dict(size=14, line=dict(width=1, color='black')), opacity=0.85)
 
