@@ -167,7 +167,7 @@ with tab1:
 with tab2:
     # Use Country_Flag instead of Country for the index
     display_cols = ['Country Flag', 'Archetype', 'Index_Score', 'regulation', 'Crypto_Adoption_Rank', 'Inflation', 'Financial_Closedness']
-    df_tab2 = df[display_cols].set_index('Country_Flag').sort_values(by='Index_Score', ascending=False)
+    df_tab2 = df[display_cols].set_index('Country Flag').sort_values(by='Index_Score', ascending=False)
     
     st.subheader("Store of Value Necessity Dataset")
     st.caption("Displaying the Core variables and algorithmic Archetype classifications.")
@@ -210,7 +210,7 @@ with tab3:
         y='Index_Score',
         color='Archetype',
         color_discrete_map=color_map,
-        hover_name='Country_Flag',
+        hover_name='Country Flag',
         labels={
             'Index_Score': 'Index Score',
             'regulation': 'Regulation',
