@@ -346,6 +346,19 @@ with tab4:
     sim_country = st.selectbox("Select Country to Simulate", sorted(df['Country'].unique()), key="sim_c")
     r_sim = df[df['Country'] == sim_country].iloc[0]
     
+    # Session State Initialization for safe weight sliders
+    if 'w_close' not in st.session_state: st.session_state.w_close = 53
+    if 'w_adopt' not in st.session_state: st.session_state.w_adopt = 46
+
+    # Callbacks to ensure weights never exceed 100% without breaking Streamlit
+    def update_weights(changed):
+        if changed == 'close':
+            if st.session_state.w_close + st.session_state.w_adopt > 100:
+                st.session_state.w_adopt = 100 - st.session_state.w_close
+        elif changed == 'adopt':
+            if st.session_state.w_close + st.session_state.w_adopt > 100:
+                st.session_state.w_close = 100 - st.session_state.w_adopt
+    
     # ---------------------------------------------------------
     # TOP SECTION: CONTROL PANELS SIDE-BY-SIDE
     # ---------------------------------------------------------
@@ -371,15 +384,17 @@ with tab4:
         st.subheader("2. Override Global Index Weights")
         st.caption("Shift the PCA variance weights. The system caps combinations to strictly equal 100%.")
         
-        w_close = st.slider("Weight: Capital Controls (%)", 0, 100, 53,
-                            help="Override the PCA variance weight for Financial Closedness/Capital Controls.")
+        # Both sliders go 0 to 100, but they automatically push each other down if you exceed 100
+        st.slider("Weight: Capital Controls (%)", 0, 100, key='w_close', on_change=update_weights, args=('close',),
+                  help="Override the PCA variance weight for Financial Closedness/Capital Controls.")
         
-        w_adopt = st.slider("Weight: Grassroots Adoption (%)", 0, 100 - w_close, min(46, 100 - w_close),
-                            help="Override the PCA variance weight for Grassroots Crypto Adoption.")
+        st.slider("Weight: Grassroots Adoption (%)", 0, 100, key='w_adopt', on_change=update_weights, args=('adopt',),
+                  help="Override the PCA variance weight for Grassroots Crypto Adoption.")
         
+        w_close = st.session_state.w_close
+        w_adopt = st.session_state.w_adopt
         w_inf = 100 - w_close - w_adopt
         
-        # Use a metric with a tooltip to display the calculated remainder elegantly
         st.metric(label="Weight: Inflation (%)", value=f"{w_inf}%", 
                   help="Auto-calculated remainder to ensure a perfect 100% distribution. Represents the override weight for Inflation.")
 
