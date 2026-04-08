@@ -163,7 +163,7 @@ with col_logo:
     st.image("https://images.ctfassets.net/sygt3q11s4a9/3x7SlEtglsK24xKCI4klI5/ce347e6caf775dd7d8a7759619577871/1_oOgJJrP9DcjOLpq5YLzsFQ.png?fm=avif&w=1400&h=712&q=65", width=200)
 with col_text:
     st.markdown("<h1 style='color: #0052FF; margin-bottom: 0px;'>From the Unbanked to the Unbrokered</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 1.3rem; color: #2C3E50; margin-top: 5px;'>Tokenized Capital Markets Propensity—Insights into the likely adoption drivers of tokenized capital markets.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 1.3rem; color: #2C3E50; margin-top: 5px;'>Tokenized Capital Markets Propensity Insights—Insights into the likely adoption drivers of tokenized capital markets.</p>", unsafe_allow_html=True)
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🗺️ Visual Dashboard", 
@@ -217,7 +217,6 @@ with tab1:
         r = c_row.iloc[0]
         st.markdown(f"### {r['Flag']} {st.session_state.sel_country} Snapshot")
         
-        st.markdown("<div class='snapshot-box'>", unsafe_allow_html=True)
         m1, m2, m3, m4, m5 = st.columns(5)
         m1.metric("Macro Archetype", f"{r['Archetype']}")
         m2.metric("SoV Index Score", f"{r['Index_Score']:.1f} / 100")
@@ -337,7 +336,9 @@ with tab3:
 with tab4:
     st.header("The \"What-If\" Simulator")
     st.markdown("""
-    Our weights were determined by **Principal Component Analysis (PCA)**. PCA is a machine learning algorithm that mathematically discovers the true variance within the global economy to automatically weight each variable without human bias. To see the effects of changes in these inputs, select a country and dynamically shift its core parameters—or override the global PCA weights—to see how these changes mathematically redefine that country within the global landscape.
+    Our weights were determined by **Principal Component Analysis (PCA)**. PCA is a machine learning algorithm that mathematically discovers the true variance within the global economy to automatically weight each variable without human bias. 
+    
+    To see the effects of changes in these inputs, select a country and dynamically shift its core parameters—or override the global PCA weights—to see how these changes mathematically redefine that country within the global landscape.
     """)
     st.divider()
     
