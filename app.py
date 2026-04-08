@@ -162,7 +162,6 @@ col_logo, col_text = st.columns([1, 4])
 with col_logo:
     st.image("https://images.ctfassets.net/sygt3q11s4a9/3x7SlEtglsK24xKCI4klI5/ce347e6caf775dd7d8a7759619577871/1_oOgJJrP9DcjOLpq5YLzsFQ.png?fm=avif&w=1400&h=712&q=65", width=200)
 with col_text:
-    # Updated to feature the clean title and the non-bold subtitle beneath it
     st.markdown("<h1 style='color: #0052FF; margin-bottom: 0px;'>From the Unbanked to the Unbrokered</h1>", unsafe_allow_html=True)
     st.markdown("<p style='font-size: 1.3rem; color: #2C3E50; margin-top: 5px;'>Tokenized Capital Markets Propensity Insights—Insights into the likely adoption drivers of tokenized capital markets.</p>", unsafe_allow_html=True)
 
@@ -277,12 +276,18 @@ with tab3:
     fig_quad = px.scatter(
         df, x='regulation_jittered', y='Index_Score', color='Archetype',
         color_discrete_map=color_map, hover_name='Country_Flag',
+        text='ISO Code',
         labels={'Index_Score': 'Index Score', 'regulation': 'Regulation', 'Inflation': 'Inflation (%)', 'Financial_Closedness': 'Financial Closedness', 'Crypto_Adoption_Rank': 'Crypto Adoption Rank', 'Archetype': 'Archetype'},
         hover_data={'regulation_jittered': False, 'Archetype': True, 'Index_Score': ':.1f', 'regulation': ':.1f', 'Inflation': ':.1f', 'Financial_Closedness': ':.2f', 'Crypto_Adoption_Rank': True},
         size_max=15
     )
 
-    fig_quad.update_traces(marker=dict(size=14, line=dict(width=1, color='black')), opacity=0.85)
+    fig_quad.update_traces(
+        textposition='top center',
+        textfont=dict(size=10, color='#2C3E50'),
+        marker=dict(size=14, line=dict(width=1, color='black')), 
+        opacity=0.85
+    )
 
     fig_quad.add_annotation(x=2.0, y=102, text="<b>Sovereign Controllers</b>", showarrow=False, font=dict(color="#e74c3c", size=15))
     fig_quad.add_annotation(x=6.0, y=102, text="<b>Leapfroggers</b>", showarrow=False, font=dict(color="#2ecc71", size=15))
@@ -332,7 +337,9 @@ with tab3:
 with tab4:
     st.header("The \"What-If\" Simulator")
     st.markdown("""
-    Our weights were determined by **Principal Component Analysis (PCA)**. PCA is a machine learning algorithm that mathematically discovers the true variance within the global economy to automatically weight each variable without human bias. To see the effects of changes in these inputs, select a country and dynamically shift its core parameters—or override the global PCA weights—to see how these changes mathematically redefine that country within the global landscape.
+    Our weights were determined by **Principal Component Analysis (PCA)**. PCA is a machine learning algorithm that mathematically discovers the true variance within the global economy to automatically weight each variable without human bias. 
+    
+    To see the effects of changes in these inputs, select a country and dynamically shift its core parameters—or override the global PCA weights—to see how these changes mathematically redefine that country within the global landscape.
     """)
     st.divider()
     
@@ -371,7 +378,10 @@ with tab4:
                             help="Override the PCA variance weight for Grassroots Crypto Adoption.")
         
         w_inf = 100 - w_close - w_adopt
-        st.info(f"**Weight: Inflation (%)**: `{w_inf}%`\n\n*(Auto-calculated remainder to ensure a perfect 100% distribution. Represents the override weight for Inflation)*")
+        
+        # Use a metric with a tooltip to display the calculated remainder elegantly
+        st.metric(label="Weight: Inflation (%)", value=f"{w_inf}%", 
+                  help="Auto-calculated remainder to ensure a perfect 100% distribution. Represents the override weight for Inflation.")
 
     # ---------------------------------------------------------
     # MATH & ALGORITHM RECALCULATIONS
