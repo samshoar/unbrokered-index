@@ -8,7 +8,7 @@ import os
 # 1. PAGE CONFIGURATION & CUSTOM CSS
 # ==========================================
 st.set_page_config(
-    page_title="Coinbase Institute Unbrokered Index", 
+    page_title="The Unbrokered Index", 
     page_icon="©️", 
     layout="wide"
 )
