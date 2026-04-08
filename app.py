@@ -83,12 +83,13 @@ def load_data():
     csv_path = os.path.join(current_dir, "df_unbrokered_master.csv")
     df = pd.read_csv(csv_path)
     
-    col_mapping = {
-        'Financial_Closedness (53.27%)': 'Financial_Closedness',
-        'Inflation (1.17%)': 'Inflation',
-        'Crypto_Adoption_Rank (45.56%)': 'Crypto_Adoption_Rank',
-        'Archetype_Label': 'Archetype'
-    }
+    # DYNAMIC COLUMN RENAMING (Protects against future PCA percentage changes)
+    col_mapping = {'Archetype_Label': 'Archetype'}
+    for col in df.columns:
+        if 'Financial_Closedness' in col: col_mapping[col] = 'Financial_Closedness'
+        elif 'Inflation' in col: col_mapping[col] = 'Inflation'
+        elif 'Crypto_Adoption_Rank' in col: col_mapping[col] = 'Crypto_Adoption_Rank'
+            
     df = df.rename(columns=col_mapping)
     df['Archetype'] = df['Archetype'].replace({'Low Demand': 'Low Demand Economies', 'Giants': 'Financial Hubs'})
     
@@ -141,16 +142,12 @@ if 'pca_models' not in st.session_state:
         else:
             cluster_mapping[i] = "Financial Hubs"
 
-    # Strictly apply the mathematically defined labels to the dataset
-    df['Archetype'] = kmeans.predict(cluster_scaled)
-    df['Archetype'] = df['Archetype'].map(cluster_mapping)
-
     st.session_state['pca_models'] = {
         'scaler_pca': scaler_pca, 'pca': pca, 'pca_min': pca_min, 'pca_max': pca_max,
         'scaler_cluster': scaler_cluster, 'kmeans': kmeans, 'cluster_mapping': cluster_mapping
     }
 
-# Sync the df Archetypes with the models we just built
+# Sync the df Archetypes strictly with the models we just built
 df['Archetype'] = st.session_state['pca_models']['kmeans'].predict(
     st.session_state['pca_models']['scaler_cluster'].transform(df[['regulation', 'Index_Score']])
 )
@@ -437,9 +434,9 @@ with tab5:
     1. **Standardization:** We first passed the variables (`Financial_Closedness`, `Inflation`, and `Crypto_Adoption_Rank`) through a `StandardScaler` to ensure metrics with different units (percentages, ranks, indices) were measured equally.
     2. **Variance Mapping:** The algorithm drew a line of "maximum variance" through the dataset, dynamically weighting each variable based on its actual impact on the global landscape. 
     3. **Index Generation:** The raw PCA scores were then normalized onto a clean 0 to 100 scale, plotted on the Y-Axis of our visual frameworks. The final data-driven weights assigned by the algorithm were:
-        * **Financial Closedness:** 53.27%
-        * **Grassroots Crypto Adoption:** 45.56%
-        * **Inflation:** 1.17%
+        * **Financial Closedness:** 52.51%
+        * **Grassroots Crypto Adoption:** 46.80%
+        * **Inflation:** 0.70%
     """)
 
     st.divider()
