@@ -100,9 +100,6 @@ def load_data():
     
     df['Flag'] = df['ISO Code'].apply(get_flag)
     df['Country_Flag'] = df['Flag'] + " " + df['Country']
-
-    # Manual Override (USA) to preserve Geopolitical accuracy in visual outputs
-    df.loc[df['Country'] == 'United States', 'Archetype'] = 'Giants'
     
     return df.sort_values(by=['Country'])
 
@@ -144,10 +141,20 @@ if 'pca_models' not in st.session_state:
         else:
             cluster_mapping[i] = "Giants"
 
+    # Strictly apply the mathematically defined labels to the dataset
+    df['Archetype'] = kmeans.predict(cluster_scaled)
+    df['Archetype'] = df['Archetype'].map(cluster_mapping)
+
     st.session_state['pca_models'] = {
         'scaler_pca': scaler_pca, 'pca': pca, 'pca_min': pca_min, 'pca_max': pca_max,
         'scaler_cluster': scaler_cluster, 'kmeans': kmeans, 'cluster_mapping': cluster_mapping
     }
+
+# Sync the df Archetypes with the models we just built
+df['Archetype'] = st.session_state['pca_models']['kmeans'].predict(
+    st.session_state['pca_models']['scaler_cluster'].transform(df[['regulation', 'Index_Score']])
+)
+df['Archetype'] = df['Archetype'].map(st.session_state['pca_models']['cluster_mapping'])
 
 if 'sel_country' not in st.session_state:
     st.session_state.sel_country = "United States"
@@ -266,6 +273,33 @@ with tab3:
 
     st.plotly_chart(fig_quad, use_container_width=True)
 
+    st.divider()
+    
+    st.subheader("Archetype Breakdown")
+    
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("### 🔴 Sovereign Controllers")
+        st.markdown("""
+        **Vibe: Survival/Control + State-Driven** These jurisdictions feature a high macroeconomic necessity for unbrokered assets (driven by inflation or capital controls), generating massive organic market demand from citizens. However, adoption is actively suppressed or tightly controlled through strict governmental frameworks. The state recognizes the utility of decentralized technology (often to bypass Western financial rails like SWIFT), but implements it strictly via top-down surveillance models (like CBDCs) rather than open, permissionless frameworks.
+        """)
+        
+        st.markdown("### 🟣 Low Demand Economies")
+        st.markdown("""
+        **Vibe: Market Indifference** These regions sit at the intersection of low macroeconomic distress and low regulatory clarity. With relatively stable local currencies and accessible traditional banking, everyday citizens lack the acute "survival" catalyst needed to organically adopt unbrokered digital assets. Because the grassroots demand is low, local governments have little incentive or urgency to proactively draft comprehensive digital asset frameworks.
+        """)
+
+    with c2:
+        st.markdown("### 🟢 Leapfroggers")
+        st.markdown("""
+        **Vibe: Survival + Market-Driven** Leapfroggers are environments experiencing severe fiat devaluation or extreme financial closedness. In these regions, unbrokered assets are not a speculative vehicle, but a literal "life raft." Everyday citizens bypass failing legacy banking systems entirely, organically adopting stablecoins and decentralized rails to protect their wealth. Crucially, the government responds to this undeniable grassroots reality by drafting accommodating regulations to capture, rather than combat, the capital flow.
+        """)
+
+        st.markdown("### 🔵 Giants")
+        st.markdown("""
+        **Vibe: Optimization + Institutional Arbitrage** These are wealthy, stable, financial hubs. Because inflation is low and capital mobility is high, retail demand for "life raft" crypto is negligible. Instead, the push for tokenization in these jurisdictions is entirely institutional. Governments here write crystal-clear, proactive regulations designed to lure global capital and traditional finance (TradFi) institutions seeking efficiency gains, operational optimization, and jurisdictional arbitrage.
+        """)
+
 # ==========================================
 # TAB 4: POLICY SIMULATOR (WHAT-IF)
 # ==========================================
@@ -293,51 +327,36 @@ with tab4:
         st.subheader("2. Override Global Index Weights")
         st.caption("Shift the PCA variance weights. The system caps combinations to strictly equal 100%.")
         
-        # Slider 1 is fully free
         w_close = st.slider("Weight: Capital Controls (%)", 0, 100, 53)
-        
-        # Slider 2 dynamically shrinks its maximum boundary based on Slider 1
         w_adopt = st.slider("Weight: Grassroots Adoption (%)", 0, 100 - w_close, min(46, 100 - w_close))
-        
-        # Variable 3 is the perfect remainder (no slider needed, preventing UX frustration)
         w_inf = 100 - w_close - w_adopt
         st.info(f"**Weight: Inflation (%)**: `{w_inf}%`\n\n*(Auto-calculated remainder to ensure a perfect 100% distribution)*")
 
     # ---------------------------------------------------------
     # MATH & ALGORITHM RECALCULATIONS
     # ---------------------------------------------------------
-    # Normalize to 0-1 for the math
     wc_n, wa_n, wi_n = w_close/100.0, w_adopt/100.0, w_inf/100.0
     models = st.session_state['pca_models']
     
-    # Recalculate global baseline with new weights
     all_features = df[['Financial_Closedness', 'Inflation', 'Crypto_Adoption_Rank']]
     all_scaled = models['scaler_pca'].transform(all_features)
     
-    # Adoption rank is inverted so higher number = lower rank = less distress
     all_raw_scores = (all_scaled[:, 0] * wc_n) + (all_scaled[:, 1] * wi_n) - (all_scaled[:, 2] * wa_n)
     new_min, new_max = all_raw_scores.min(), all_raw_scores.max()
 
-    # Recalculate simulated country
     new_features = np.array([[sim_close, sim_inf, sim_adopt]])
     new_scaled = models['scaler_pca'].transform(new_features)[0]
     new_pca_raw = (new_scaled[0] * wc_n) + (new_scaled[1] * wi_n) - (new_scaled[2] * wa_n)
     
-    # Edge case protection for division by zero
     if new_max == new_min: new_index = 50.0
     else: new_index = ((new_pca_raw - new_min) / (new_max - new_min)) * 100
         
     new_index = np.clip(new_index, 0, 100)
     
-    # Re-classify via K-Means
     new_point_df = pd.DataFrame({'regulation': [sim_reg], 'Index_Score': [new_index]})
     new_cluster_scaled = models['scaler_cluster'].transform(new_point_df)
     predicted_cluster = models['kmeans'].predict(new_cluster_scaled)[0]
     new_arch = models['cluster_mapping'][predicted_cluster]
-    
-    # Manual US override preservation
-    if sim_country == "United States" and new_arch == "Leapfroggers":
-        new_arch = "Giants"
 
     # ---------------------------------------------------------
     # BOTTOM SECTION: FULL WIDTH CHART & METRICS
@@ -349,7 +368,6 @@ with tab4:
     col_res1.metric("New SoV Index Score", f"{new_index:.1f}", f"{new_index - r_sim['Index_Score']:.1f}")
     col_res2.metric("New Archetype Classification", new_arch)
 
-    # Build dynamic background 
     df_sim_bg = df.copy()
     df_sim_bg['Sim_Raw'] = all_raw_scores
     if new_max == new_min: df_sim_bg['Sim_Index'] = 50.0
@@ -359,7 +377,6 @@ with tab4:
     bg_cluster_scaled = models['scaler_cluster'].transform(bg_features)
     bg_clusters = models['kmeans'].predict(bg_cluster_scaled)
     df_sim_bg['Sim_Archetype'] = [models['cluster_mapping'][c] for c in bg_clusters]
-    df_sim_bg.loc[df_sim_bg['Country'] == 'United States', 'Sim_Archetype'] = 'Giants'
 
     fig_sim = px.scatter(
         df_sim_bg, x='regulation', y='Sim_Index', color='Sim_Archetype',
@@ -367,21 +384,18 @@ with tab4:
         size_max=10
     )
     
-    # Hollow Circle: Original placement
     fig_sim.add_trace(go.Scatter(
         x=[r_sim['regulation']], y=[r_sim['Index_Score']],
         mode='markers', marker=dict(size=14, color='white', line=dict(width=2, color='black')),
         name=f"Original {sim_country}", hoverinfo="none"
     ))
     
-    # Giant Star: Simulated placement
     fig_sim.add_trace(go.Scatter(
         x=[sim_reg], y=[new_index],
         mode='markers', marker=dict(size=22, symbol='star', color=color_map.get(new_arch, '#000'), line=dict(width=2, color='black')),
         name=f"Simulated {sim_country}", hoverinfo="none"
     ))
     
-    # Arrow showing the movement
     fig_sim.add_annotation(
         x=sim_reg, y=new_index, ax=r_sim['regulation'], ay=r_sim['Index_Score'],
         xref='x', yref='y', axref='x', ayref='y',
