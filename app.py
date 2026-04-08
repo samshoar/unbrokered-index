@@ -12,7 +12,7 @@ from sklearn.decomposition import PCA
 # 1. PAGE CONFIGURATION & CUSTOM CSS
 # ==========================================
 st.set_page_config(
-    page_title="The Tokenized Equities Propensity Index", 
+    page_title="Tokenized Capital Markets Propensity Insights", 
     page_icon="©️", 
     layout="wide"
 )
@@ -33,6 +33,14 @@ st.markdown("""
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
+            height: 100%;
+        }
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 2px solid #E0E5EC;
+            font-size: 0.95rem;
+            color: #555;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -68,10 +76,10 @@ def get_flag(iso3):
     return chr(ord(iso2[0]) + 127397) + chr(ord(iso2[1]) + 127397)
 
 color_map = {
-    "Sovereign Controllers": "#e74c3c",   
+    "Grassroot demands": "#e74c3c",   
     "Leapfroggers": "#2ecc71",            
     "Low Demand Economies": "#9b59b6",    
-    "Financial Hubs": "#3498db"                   
+    "Tokenization Hubs": "#3498db"                   
 }
 
 # ==========================================
@@ -90,7 +98,6 @@ def load_data():
         elif 'Crypto_Adoption_Rank' in col: col_mapping[col] = 'Crypto_Adoption_Rank'
             
     df = df.rename(columns=col_mapping)
-    df['Archetype'] = df['Archetype'].replace({'Low Demand': 'Low Demand Economies', 'Giants': 'Financial Hubs'})
     
     c_min, c_max = df['Financial_Closedness'].min(), df['Financial_Closedness'].max()
     df['Financial_Closedness_Display'] = ((df['Financial_Closedness'] - c_min) / (c_max - c_min)) * 100
@@ -104,6 +111,7 @@ def load_data():
     return df.sort_values(by=['Country'])
 
 df = load_data()
+dataset_size = len(df)
 
 # ==========================================
 # 3.5. MACHINE LEARNING MODELS (Uncached Session State)
@@ -135,11 +143,11 @@ if 'pca_models' not in st.session_state:
         if reg > 4.0 and idx > 50:
             cluster_mapping[i] = "Leapfroggers"
         elif reg <= 4.0 and idx > 50:
-            cluster_mapping[i] = "Sovereign Controllers"
+            cluster_mapping[i] = "Grassroot demands"
         elif reg <= 4.0 and idx <= 50:
             cluster_mapping[i] = "Low Demand Economies"
         else:
-            cluster_mapping[i] = "Financial Hubs"
+            cluster_mapping[i] = "Tokenization Hubs"
 
     st.session_state['pca_models'] = {
         'scaler_pca': scaler_pca, 'pca': pca, 'pca_min': pca_min, 'pca_max': pca_max,
@@ -152,9 +160,6 @@ df['Archetype'] = st.session_state['pca_models']['kmeans'].predict(
 )
 df['Archetype'] = df['Archetype'].map(st.session_state['pca_models']['cluster_mapping'])
 
-if 'sel_country' not in st.session_state:
-    st.session_state.sel_country = "United States"
-
 # ==========================================
 # 4. APP HEADER
 # ==========================================
@@ -162,8 +167,9 @@ col_logo, col_text = st.columns([1, 4])
 with col_logo:
     st.image("https://images.ctfassets.net/sygt3q11s4a9/3x7SlEtglsK24xKCI4klI5/ce347e6caf775dd7d8a7759619577871/1_oOgJJrP9DcjOLpq5YLzsFQ.png?fm=avif&w=1400&h=712&q=65", width=200)
 with col_text:
-    st.markdown("<h1 style='color: #0052FF; margin-bottom: 0px;'>From the Unbanked to the Unbrokered</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size: 1.3rem; color: #2C3E50; margin-top: 5px;'>Tokenized Capital Markets Propensity Insights—Insights into the likely adoption drivers of tokenized capital markets.</p>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color: #2C3E50; margin-top: -5px; font-size: 1.8rem;'>From the Unbanked to the Unbrokered</h2>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color: #0052FF; margin-bottom: 0px;'>Tokenized Capital Markets Propensity Insights</h1>", unsafe_allow_html=True)
+
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🗺️ Visual Dashboard", 
@@ -177,6 +183,8 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # TAB 1: VISUAL DASHBOARD
 # ==========================================
 with tab1:
+    st.markdown("<p style='font-size: 1.1rem; color: #555; margin-bottom: 10px;'>Insights into the likely adoption drivers of tokenized capital markets.</p>", unsafe_allow_html=True)
+
     fig_map = px.choropleth(
         df, locations="ISO Code", color="Archetype", hover_name="Country_Flag",
         labels={
@@ -206,24 +214,38 @@ with tab1:
 
     st.divider()
 
+    # Two Interactive Windows for Comparison
     y_countries = sorted(df['Country'].unique())
-    st.session_state.sel_country = st.selectbox(
-        "📍 Select Country for Deep Dive Snapshot", y_countries, 
-        index=y_countries.index(st.session_state.sel_country) if st.session_state.sel_country in y_countries else 0, key="t1_c"
-    )
-
-    c_row = df[df['Country'] == st.session_state.sel_country]
-    if not c_row.empty:
-        r = c_row.iloc[0]
-        st.markdown(f"### {r['Flag']} {st.session_state.sel_country} Snapshot")
-        
-        m1, m2, m3, m4, m5 = st.columns(5)
-        m1.metric("Macro Archetype", f"{r['Archetype']}")
-        m2.metric("SoV Index Score", f"{r['Index_Score']:.1f} / 100")
-        m3.metric("Regulation Score", f"{r['regulation']:.1f} / 8")
-        m4.metric("Crypto Adoption", f"#{int(r['Crypto_Adoption_Rank'])}")
-        m5.metric("Inflation", f"{r['Inflation']:.1f}%")
+    col_sel_a, col_sel_b = st.columns(2)
+    
+    with col_sel_a:
+        c1 = st.selectbox("📍 Select Country A", y_countries, index=y_countries.index("United States") if "United States" in y_countries else 0, key="t1_c1")
+        r1 = df[df['Country'] == c1].iloc[0]
+        st.markdown(f"### {r1['Flag']} {c1} Snapshot")
+        st.markdown("<div class='snapshot-box'>", unsafe_allow_html=True)
+        st.metric("Macro Archetype", f"{r1['Archetype']}")
+        m2, m3, m4, m5 = st.columns(4)
+        m2.metric("SoV Score", f"{r1['Index_Score']:.1f}")
+        m3.metric("Regulation", f"{r1['regulation']:.1f}")
+        m4.metric("Adoption", f"#{int(r1['Crypto_Adoption_Rank'])}")
+        m5.metric("Inflation", f"{r1['Inflation']:.1f}%")
         st.markdown("</div>", unsafe_allow_html=True)
+
+    with col_sel_b:
+        c2 = st.selectbox("📍 Select Country B (Comparison)", ["(None)"] + y_countries, index=0, key="t1_c2")
+        if c2 != "(None)":
+            r2 = df[df['Country'] == c2].iloc[0]
+            st.markdown(f"### {r2['Flag']} {c2} Snapshot")
+            st.markdown("<div class='snapshot-box'>", unsafe_allow_html=True)
+            st.metric("Macro Archetype", f"{r2['Archetype']}")
+            m2b, m3b, m4b, m5b = st.columns(4)
+            m2b.metric("SoV Score", f"{r2['Index_Score']:.1f}")
+            m3b.metric("Regulation", f"{r2['regulation']:.1f}")
+            m4b.metric("Adoption", f"#{int(r2['Crypto_Adoption_Rank'])}")
+            m5b.metric("Inflation", f"{r2['Inflation']:.1f}%")
+            st.markdown("</div>", unsafe_allow_html=True)
+        else:
+            st.info("Select a second country from the dropdown above to compare structural metrics side-by-side.")
 
 # ==========================================
 # TAB 2: RAW DATA EXPLORER
@@ -237,10 +259,10 @@ with tab2:
     
     def style_rows_by_archetype(row):
         arch = row['Archetype']
-        if arch == 'Sovereign Controllers': color = '#FDEAEA' 
+        if arch == 'Grassroot demands': color = '#FDEAEA' 
         elif arch == 'Leapfroggers': color = '#EAF8F1' 
         elif arch == 'Low Demand Economies': color = '#F4EDF7' 
-        elif arch == 'Financial Hubs': color = '#EAF3FB' 
+        elif arch == 'Tokenization Hubs': color = '#EAF3FB' 
         else: color = '#FFFFFF' 
         return [f'background-color: {color}; color: #2C3E50'] * len(row)
 
@@ -255,22 +277,12 @@ with tab2:
         "Financial_Closedness": st.column_config.NumberColumn("🏦 Raw Closedness Score", format="%.2f")
     })
 
-    st.divider()
-    st.markdown("#### Variable Definitions")
-    st.markdown("""
-    * **SoV Index Score:** A composite 0-100 score determined by our PCA algorithm. It measures a population's macroeconomic necessity for unbrokered assets (100 = Highest Necessity).
-    * **Regulation (0-8):** Tracks the maturity, legality, and comprehensiveness of a nation's formal digital asset frameworks (Atlantic Council).
-    * **Adoption Rank:** Real-world utility and adoption of digital assets by everyday retail users (Chainalysis). *Rank 1 = Highest Adoption.*
-    * **Inflation (%):** The annual percentage change in the cost of domestically manufactured goods and services via the GDP deflator (World Bank).
-    * **Raw Closedness Score:** Measures a country's capital controls and regulatory restrictions on cross-border financial transactions. Adapted from the Chinn-Ito Financial Openness Index, where higher positive scores denote strict capital controls and closed markets.
-    """)
-
 # ==========================================
 # TAB 3: MACRO ARCHETYPES (INTERACTIVE)
 # ==========================================
 with tab3:
     st.header("Propensity Archetypes in Quadrants")
-    st.markdown("By mapping the **Store of Value Necessity Index** (Y-Axis) against the **Formal Regulatory Framework Score** (X-Axis), we transition from abstract macroeconomic theory to an actionable geopolitical strategy map.")
+    st.markdown("By mapping SoV index against our Regulatory Score, countries fall into four different categories.")
 
     fig_quad = px.scatter(
         df, x='regulation_jittered', y='Index_Score', color='Archetype',
@@ -288,10 +300,10 @@ with tab3:
         opacity=0.85
     )
 
-    fig_quad.add_annotation(x=2.0, y=102, text="<b>Sovereign Controllers</b>", showarrow=False, font=dict(color="#e74c3c", size=15))
+    fig_quad.add_annotation(x=2.0, y=102, text="<b>Grassroot demands</b>", showarrow=False, font=dict(color="#e74c3c", size=15))
     fig_quad.add_annotation(x=6.0, y=102, text="<b>Leapfroggers</b>", showarrow=False, font=dict(color="#2ecc71", size=15))
     fig_quad.add_annotation(x=2.0, y=-2, text="<b>Low Demand Economies</b>", showarrow=False, font=dict(color="#9b59b6", size=15))
-    fig_quad.add_annotation(x=6.0, y=-2, text="<b>Financial Hubs</b>", showarrow=False, font=dict(color="#3498db", size=15))
+    fig_quad.add_annotation(x=6.0, y=-2, text="<b>Tokenization Hubs</b>", showarrow=False, font=dict(color="#3498db", size=15))
 
     fig_quad.update_layout(
         xaxis_title="<b>Formal Regulatory Framework Score (0-8)</b>",
@@ -309,7 +321,7 @@ with tab3:
     
     c1, c2 = st.columns(2)
     with c1:
-        st.markdown("### 🔴 Sovereign Controllers")
+        st.markdown("### 🔴 Grassroot demands")
         st.markdown("""
         **Vibe: Survival/Control + State-Driven** These jurisdictions feature a high macroeconomic necessity for unbrokered assets (driven by inflation or capital controls), generating massive organic market demand from citizens. However, adoption is actively suppressed or tightly controlled through strict governmental frameworks. The state recognizes the utility of decentralized technology (often to bypass Western financial rails like SWIFT), but implements it strictly via top-down surveillance models (like CBDCs) rather than open, permissionless frameworks.
         """)
@@ -325,7 +337,7 @@ with tab3:
         **Vibe: Survival + Market-Driven** Leapfroggers are environments experiencing severe fiat devaluation or extreme financial closedness. In these regions, unbrokered assets are not a speculative vehicle, but a literal "life raft." Everyday citizens bypass failing legacy banking systems entirely, organically adopting stablecoins and decentralized rails to protect their wealth. Crucially, the government responds to this undeniable grassroots reality by drafting accommodating regulations to capture, rather than combat, the capital flow.
         """)
 
-        st.markdown("### 🔵 Financial Hubs")
+        st.markdown("### 🔵 Tokenization Hubs")
         st.markdown("""
         **Vibe: Optimization + Institutional Arbitrage** These are wealthy, stable, financial hubs. Because inflation is low and capital mobility is high, retail demand for "life raft" crypto is negligible. Instead, the push for tokenization in these jurisdictions is entirely institutional. Governments here write crystal-clear, proactive regulations designed to lure global capital and traditional finance (TradFi) institutions seeking efficiency gains, operational optimization, and jurisdictional arbitrage.
         """)
@@ -336,20 +348,14 @@ with tab3:
 with tab4:
     st.header("The \"What-If\" Simulator")
     st.markdown("""
-    Our weights were determined by **Principal Component Analysis (PCA)**. PCA is a machine learning algorithm that mathematically discovers the true variance within the global economy to automatically weight each variable without human bias. 
-    
-    To see the effects of changes in these inputs, select a country and dynamically shift its core parameters—or override the global PCA weights—to see how these changes mathematically redefine that country within the global landscape.
+    Our weights were determined by **Principal Component Analysis (PCA)**. PCA is a machine learning algorithm that mathematically discovers the true variance within the global economy to automatically weight each variable without human bias. To see the effects of changes in these inputs, select a country and dynamically shift its core parameters—or override the global PCA weights—to see how these changes mathematically redefine that country within the global landscape.
     """)
     st.divider()
-    
-    sim_country = st.selectbox("Select Country to Simulate", sorted(df['Country'].unique()), key="sim_c")
-    r_sim = df[df['Country'] == sim_country].iloc[0]
     
     # Session State Initialization for safe weight sliders
     if 'w_close' not in st.session_state: st.session_state.w_close = 53
     if 'w_adopt' not in st.session_state: st.session_state.w_adopt = 46
 
-    # Callbacks to ensure weights never exceed 100% without breaking Streamlit
     def update_weights(changed):
         if changed == 'close':
             if st.session_state.w_close + st.session_state.w_adopt > 100:
@@ -359,12 +365,14 @@ with tab4:
                 st.session_state.w_close = 100 - st.session_state.w_adopt
     
     # ---------------------------------------------------------
-    # TOP SECTION: CONTROL PANELS SIDE-BY-SIDE
+    # TOP SECTION: CONTROL PANELS
     # ---------------------------------------------------------
     col_shock, col_weights = st.columns(2)
     
     with col_shock:
         st.subheader("1. Shock the System")
+        sim_country = st.selectbox("Primary Country to Simulate", sorted(df['Country'].unique()), key="sim_c")
+        r_sim = df[df['Country'] == sim_country].iloc[0]
         st.caption(f"Adjust the specific metrics for {sim_country}.")
         
         sim_reg = st.slider("Formal Regulation Framework (0-8)", 0.0, 8.0, float(r_sim['regulation']), 0.5,
@@ -380,10 +388,16 @@ with tab4:
                               help="Real-world utility and adoption of digital assets by everyday retail users (Chainalysis). Rank 1 = Highest Adoption.")
         
     with col_weights:
-        st.subheader("2. Override Global Index Weights")
+        st.subheader("2. Compare & Override")
+        comp_countries = st.multiselect(
+            "Select Benchmark Countries to Overlay", 
+            sorted(df['Country'].unique()), 
+            default=[],
+            help="Select one or more countries to display as fixed reference points on the graph."
+        )
+        
         st.caption("Shift the PCA variance weights. The system caps combinations to strictly equal 100%.")
         
-        # Both sliders go 0 to 100, but they automatically push each other down if you exceed 100
         st.slider("Weight: Capital Controls (%)", 0, 100, key='w_close', on_change=update_weights, args=('close',),
                   help="Override the PCA variance weight for Financial Closedness/Capital Controls.")
         
@@ -445,22 +459,36 @@ with tab4:
 
     fig_sim = px.scatter(
         df_sim_bg, x='regulation', y='Sim_Index', color='Sim_Archetype',
-        color_discrete_map=color_map, hover_name='Country_Flag', opacity=0.3,
+        color_discrete_map=color_map, hover_name='Country_Flag', opacity=0.2,
         size_max=10
     )
     
+    # 1. Plot comparison benchmarks
+    for c in comp_countries:
+        if c != sim_country:  # Prevent duplicate overlap if they select the simulated country
+            r_comp = df_sim_bg[df_sim_bg['Country'] == c].iloc[0]
+            fig_sim.add_trace(go.Scatter(
+                x=[r_comp['regulation']], y=[r_comp['Sim_Index']],
+                mode='markers+text', text=[c], textposition='top center', textfont=dict(color="black", size=10),
+                marker=dict(size=12, color='white', line=dict(width=2, color='gray')),
+                name=f"Benchmark: {c}", hoverinfo="none"
+            ))
+
+    # 2. Hollow Circle: Original placement of Simulated Country
     fig_sim.add_trace(go.Scatter(
         x=[r_sim['regulation']], y=[r_sim['Index_Score']],
         mode='markers', marker=dict(size=14, color='white', line=dict(width=2, color='black')),
         name=f"Original {sim_country}", hoverinfo="none"
     ))
     
+    # 3. Giant Star: Simulated placement
     fig_sim.add_trace(go.Scatter(
         x=[sim_reg], y=[new_index],
         mode='markers', marker=dict(size=22, symbol='star', color=color_map.get(new_arch, '#000'), line=dict(width=2, color='black')),
         name=f"Simulated {sim_country}", hoverinfo="none"
     ))
     
+    # Arrow showing the movement
     fig_sim.add_annotation(
         x=sim_reg, y=new_index, ax=r_sim['regulation'], ay=r_sim['Index_Score'],
         xref='x', yref='y', axref='x', ayref='y',
@@ -483,8 +511,8 @@ with tab5:
     st.markdown("This dashboard relies on a rigorous combination of structured data sourcing, dimensionality reduction (PCA), and unsupervised machine learning to classify the global macroeconomic landscape.")
     
     st.markdown("### 1. Data Sourcing")
+    st.markdown(f"The Tokenized Equities Propensity Index synthesizes data from five premier global institutions to ensure a comprehensive macroeconomic snapshot of {dataset_size} countries:")
     st.markdown("""
-    The Tokenized Equities Propensity Index synthesizes data from five premier global institutions to ensure a comprehensive macroeconomic snapshot:
     * **Grassroots Crypto Adoption:** Sourced from *Chainalysis*. Evaluates the real-world utility and adoption of digital assets by everyday retail users (ranked 1 to 150).
     * **Financial Closedness:** Adapted from the *Chinn-Ito Financial Openness Index*. The index measures a country's capital controls and regulatory restrictions on cross-border financial transactions. The score is mathematically inverted to measure "Closedness."
     * **Inflation (GDP Deflator):** Sourced from the *World Bank*. Measures the annual percentage change in the cost of all newly produced, domestically manufactured goods and services.
@@ -511,9 +539,24 @@ with tab5:
 
     st.markdown("### 3. K-Means Clustering (Archetype Classification)")
     st.markdown("""
-    To prevent human bias when categorizing countries into the four geopolitical archetypes (Financial Hubs, Leapfroggers, Sovereign Controllers, Low Demand Economies), we utilized **K-Means Clustering**.
+    To prevent human bias when categorizing countries into the four geopolitical archetypes (Tokenization Hubs, Leapfroggers, Grassroot demands, Low Demand Economies), we utilized **K-Means Clustering**.
     
     * **The Algorithm:** We instructed a K-Means algorithm to evaluate the two-dimensional space mapping our PCA Index Score (Y-Axis) against the Formal Regulatory Score (X-Axis). 
     * **Standardized Distances:** Before clustering, both axes were standardized. This ensured that the 0-100 scale of the Y-axis did not mathematically overpower the 0-8 scale of the X-axis during distance calculations.
     * **Centroid Identification:** By setting the algorithm to find exactly four clusters ($k=4$), it calculated the spatial distance between every single country, organically grouping them based on mathematical density and proximity to one of four algorithmic centroids.
     """)
+
+# ==========================================
+# GLOBAL FOOTER (Displays on all tabs)
+# ==========================================
+st.markdown("<div class='footer'>", unsafe_allow_html=True)
+st.markdown("#### 📚 Variable Definitions & Core Metrics")
+st.markdown(f"**Total Countries Analyzed:** {dataset_size}")
+st.markdown("""
+* **SoV Index Score:** A composite 0-100 score determined by our PCA algorithm. It assesses a population's desire for a store of value (100 = Highest Desire).
+* **Regulation (0-8):** Tracks the maturity, legality, and comprehensiveness of a nation's formal digital asset frameworks (Atlantic Council, CBI analysis).
+* **Adoption Rank:** Real-world utility and adoption of digital assets by everyday retail users (Chainalysis). *Rank 1 = Highest Adoption.*
+* **Inflation (%):** The annual percentage change in the cost of domestically manufactured goods and services via the GDP deflator (World Bank).
+* **Capital Controls (Raw Closedness Score):** Measures a country's capital controls and regulatory restrictions on cross-border financial transactions. Adapted from the Chinn-Ito Financial Openness Index and inverted so that higher positive scores denote stricter capital controls and closed markets.
+""")
+st.markdown("</div>", unsafe_allow_html=True)
