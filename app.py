@@ -8,7 +8,7 @@ import os
 # 1. PAGE CONFIGURATION & CUSTOM CSS
 # ==========================================
 st.set_page_config(
-    page_title="The Unbrokered Index", 
+    page_title="Coinbase Institute Unbrokered Index", 
     page_icon="©️", 
     layout="wide"
 )
@@ -93,7 +93,7 @@ def load_data():
     
     # Generate Flags and Country_Flag column
     df['Flag'] = df['ISO Code'].apply(get_flag)
-    df['Country Flag'] = df['Flag'] + " " + df['Country']
+    df['Country_Flag'] = df['Flag'] + " " + df['Country']
     
     return df.sort_values(by=['Country'])
 
@@ -109,7 +109,7 @@ col_logo, col_text = st.columns([1, 4])
 with col_logo:
     st.image("https://images.ctfassets.net/sygt3q11s4a9/3x7SlEtglsK24xKCI4klI5/ce347e6caf775dd7d8a7759619577871/1_oOgJJrP9DcjOLpq5YLzsFQ.png?fm=avif&w=1400&h=712&q=65", width=200)
 with col_text:
-    st.title("The Unbrokered Index")
+    st.title("Coinbase Institute Unbrokered Index")
     st.markdown("Identify the structural drivers pushing populations toward grassroots cryptocurrency adoption.")
 
 tab1, tab2, tab3, tab4 = st.tabs([
@@ -136,7 +136,7 @@ with tab1:
 
     # Generate Map (without ISO code text overlay)
     fig_map = px.choropleth(
-        df, locations="ISO Code", color="Archetype", hover_name="Country Flag",
+        df, locations="ISO Code", color="Archetype", hover_name="Country_Flag",
         hover_data={"ISO Code": False, "Index_Score": ':.1f', "regulation": True},
         color_discrete_map=color_map,
         projection="natural earth",
@@ -166,8 +166,8 @@ with tab1:
 # ==========================================
 with tab2:
     # Use Country_Flag instead of Country for the index
-    display_cols = ['Country Flag', 'Archetype', 'Index_Score', 'regulation', 'Crypto_Adoption_Rank', 'Inflation', 'Financial_Closedness']
-    df_tab2 = df[display_cols].set_index('Country Flag').sort_values(by='Index_Score', ascending=False)
+    display_cols = ['Country_Flag', 'Archetype', 'Index_Score', 'regulation', 'Crypto_Adoption_Rank', 'Inflation', 'Financial_Closedness']
+    df_tab2 = df[display_cols].set_index('Country_Flag').sort_values(by='Index_Score', ascending=False)
     
     st.subheader("Store of Value Necessity Dataset")
     st.caption("Displaying the Core variables and algorithmic Archetype classifications.")
@@ -210,7 +210,7 @@ with tab3:
         y='Index_Score',
         color='Archetype',
         color_discrete_map=color_map,
-        hover_name='Country Flag',
+        hover_name='Country_Flag',
         labels={
             'Index_Score': 'Index Score',
             'regulation': 'Regulation',
