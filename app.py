@@ -697,17 +697,6 @@ with tab5:
     3. We instruct the algorithm to find exactly four clusters (`n_clusters=4`). The algorithm measures the spatial distance between every country and organically groups them based on mathematical density.
     4. The coordinates of the resulting four centroids are mathematically sorted into quadrants (Top-Left, Top-Right, Bottom-Left, Bottom-Right) and assigned to their respective behavioral labels: **Grassroot demands**, **Leapfroggers**, **Low Demand Economies**, and **Tokenization Hubs**.
     """)
-    
-    st.divider()
-
-    st.markdown("### 5. The Institutional Matrix (\"Why vs. Who\")")
-    st.markdown("""
-    We calculate a separate, third behavioral model that abandons formal regulation entirely to measure underlying institutional dynamics.
-    1. Five input variables (`Value_per_Capita`, `Inflation`, `Financial_Closedness`, `Banking_Concentration_5`, and `Crypto_Adoption_Rank`) are independently standardized into Z-Scores.
-    2. **The Y-Axis ("Why" - Survival vs. Optimization):** We calculate `Z_Value_per_Capita - Z_Inflation - Z_Financial_Closedness`. High wealth pulls a country UP (Optimization), while high inflation and financial closedness pull it DOWN (Survival).
-    3. **The X-Axis ("Who" - Market vs. Government):** We calculate `Z_Banking_Concentration + Z_Crypto_Adoption_Rank`. High banking concentration pulls a country RIGHT (State-Driven), while high grassroots adoption ranks pull it LEFT (Market-Driven).
-    4. We apply `StandardScaler` to these new X and Y coordinates and run the K-Means algorithm (`n_clusters=4`) to dynamically map countries into four distinct institutional boxes: **The Gridlocked Giants**, **Jurisdictional Arbitrageurs**, **Life-Raft Leapfroggers**, and **Sovereign Controllers**.
-    """)
 
 # ==========================================
 # GLOBAL FOOTER (Displays on all tabs)
