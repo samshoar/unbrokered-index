@@ -354,7 +354,6 @@ with tab1:
 
     st.divider()
 
-    # Two Interactive Windows for Comparison
     y_countries = sorted(df['Country'].unique())
     col_sel_a, col_sel_b = st.columns(2)
     
@@ -362,7 +361,6 @@ with tab1:
         c1 = st.selectbox("📍 Select Country A", y_countries, index=y_countries.index("United States") if "United States" in y_countries else 0, key="t1_c1")
         r1 = df[df['Country'] == c1].iloc[0]
         st.markdown(f"### {r1['Flag']} {c1} Snapshot")
-        st.markdown("<div class='snapshot-box'>", unsafe_allow_html=True)
         st.metric("Macro Archetype", f"{r1['Active_Archetype']}")
         m2, m3, m4, m5 = st.columns(4)
         m2.metric("Active SoV Score", f"{r1['Active_Index_Score']:.1f}")
@@ -376,7 +374,6 @@ with tab1:
         if c2 != "(None)":
             r2 = df[df['Country'] == c2].iloc[0]
             st.markdown(f"### {r2['Flag']} {c2} Snapshot")
-            st.markdown("<div class='snapshot-box'>", unsafe_allow_html=True)
             st.metric("Macro Archetype", f"{r2['Active_Archetype']}")
             m2b, m3b, m4b, m5b = st.columns(4)
             m2b.metric("Active SoV Score", f"{r2['Active_Index_Score']:.1f}")
@@ -652,47 +649,64 @@ with tab4:
 # TAB 5: DATA AND METHODOLOGY
 # ==========================================
 with tab5:
-    st.header("Data and Methodology")
-    st.markdown("This section details how the global macroeconomic data in our pipeline is assembled, and exactly why we use machine learning models like PCA and K-Means Clustering to build our index.")
+    st.header("Data Handling and Methodology")
+    st.markdown("This section describes how the data in our pipeline is assembled, how missing values are treated at each step, how variables are standardized, and how our dimensionality reduction (PCA) and K-Means clustering models are specified.")
     
-    st.markdown("### 1. Data Sourcing")
-    st.markdown(f"The analysis synthesizes data from four global institutions to ensure a comprehensive macroeconomic snapshot of {dataset_size} countries:")
+    st.markdown("### 1. Import and Merge")
+    st.markdown(f"The analysis starts from six raw data sources to ensure a comprehensive macroeconomic snapshot of {dataset_size} countries:")
     st.markdown("""
-    1. **Grassroots Crypto Adoption (Chainalysis):** Evaluates the real-world utility of digital assets by everyday retail users (Rank 1 = Highest Adoption).
-    2. **Financial Openness (Chinn–Ito):** Measures capital controls. We mathematically invert this index to measure **Financial Closedness**.
-    3. **Inflation (World Bank WDI):** Measures the annual percentage change in the cost of goods and services via the GDP deflator.
-    4. **Regulatory Frameworks (Atlantic Council):** Tracks the maturity and legality of formal digital asset frameworks on a continuous scale of 0 to 8. 
+    * **Crypto Adoption (Chainalysis):** Contains a rank measure of real-world cryptocurrency adoption by country (1 = highest adoption).
+    * **Mobile Connectivity (GSMA):** Provides a mobile connectivity index by country and year.
+    * **Financial Openness (Chinn–Ito):** Provides the capital account openness index. We mathematically invert this metric to measure **Financial Closedness**.
+    * **World Bank WDI:** Provides macroeconomic indicators, specifically the annual **Inflation** percentage (via the GDP deflator).
+    * **Regulatory Frameworks (Atlantic Council):** Tracks the maturity and legality of formal digital asset frameworks on a continuous scale of 0 to 8.
+    * **Banking Concentration (GFDD) & Market Cap:** Measures 5-bank asset concentration and total value per capita to assess institutional wealth and market dominance.
+    """)
+    st.markdown("The harmonized dataframes are merged via outer joins on `['ISO Code', 'Year']`. Every country–year present in any source appears in the merged dataframe. If a given source has no observation for that country–year, its columns contribute `NaN` for that row. At this stage, nothing is dropped; missing values are allowed to exist and are managed downstream.")
+
+    st.divider()
+
+    st.markdown("### 2. Data Cleaning and NA Treatment")
+    st.markdown("""
+    After merging, we ensure that every row corresponds to a valid country within the intended sample window:
+    * **Time Restriction:** We retain only observations with `Year = 2023`. All earlier years are removed.
+    * **Converting to Numeric:** Raw data sources often represent missing values as strings (e.g., `".."`). The script replaces these literal strings with `NaN` and applies `pd.to_numeric(..., errors='coerce')`. This standardizes all non-ID variables as numeric and uses `NaN` as the single missing value marker.
+    * **Safe Imputation:** To prevent valid countries from dropping out of the downstream Institutional Matrix, missing values for `Banking_Concentration_5` are filled with the global median, and missing values for `Value_per_Capita` are filled with 0.
+    * **Retaining Outliers:** Hyper-outliers (such as Venezuela and Zimbabwe) are intentionally kept in the dataset. No Winsorization or data clipping is applied, ensuring the model fully accounts for the mathematical severity of global macroeconomic extremes.
+    * **Core NA Filter:** Finally, we perform a minimal essential NA filter. We drop any row where one of the core modeling variables is missing: `Financial_Closedness`, `Inflation`, `Crypto_Adoption_Rank`, or `regulation`. This guarantees that every row in the cleaned panel has complete data for the primary spatial mapping.
     """)
 
     st.divider()
 
-    st.markdown("### 2. Dimensionality Reduction: Why PCA?")
+    st.markdown("### 3. Standardization and Dimensionality Reduction (PCA)")
     st.markdown("""
-    To measure a population's intrinsic, macro-driven necessity for unbrokered assets, we needed to combine three very different variables (Inflation, Adoption Rank, and Capital Controls) into a single 0-100 **Store of Value (SoV) Index Score**.
-    
-    Rather than a human analyst subjectively guessing which factor matters most (e.g., "I think inflation is 50% of the reason people buy crypto"), we used **Principal Component Analysis (PCA)**. 
-    
-    **What is PCA?** It is an unsupervised machine learning algorithm designed to reduce complexity. PCA looks at all the data globally and mathematically calculates the "line of best fit" that explains the most variance between countries.
-    
-    By letting the math dictate the weights, we remove human bias. Based on our dataset, the PCA algorithm discovered that systemic capital controls drive far more variance in global adoption than pure inflation:
-      * **Financial Closedness:** 52.5%
-      * **Grassroots Crypto Adoption:** 46.8%
-      * **Inflation:** 0.7%
-      
-    *(Note: We provide an interpolation slider on the dashboard to let users actively override this PCA model and observe what happens when inflation is artificially forced into focus).*
+    Because our variables are measured in completely different units (ranks, percentages, and indices), we must standardize them before combining them into a single metric.
+    * Using scikit-learn’s `StandardScaler`, we compute the mean and standard deviation across the cleaned sample for the three core variables: `Financial_Closedness`, `Inflation`, and `Crypto_Adoption_Rank`. This rescales each variable so that it has a mean of 0 and a variance of 1.
+    * Instead of manually guessing which factor drives adoption, we utilize **Principal Component Analysis (PCA)**. The PCA algorithm discovers the true variance within the global economy and automatically assigns weights to our standardized variables. The baseline PCA model applies weights of **52.5% to Closedness**, **46.8% to Adoption**, and **0.7% to Inflation**. 
+    * We also calculate an **Equal Weights Model**, forcing a strict 33.3% weight across all three variables to isolate and highlight the impact of extreme inflation.
+    * The raw scores from both models are then min-max normalized onto a clean **0 to 100 Store of Value (SoV) Index Score**, where 100 represents the highest macroeconomic necessity for unbrokered assets.
     """)
     
     st.divider()
 
-    st.markdown("### 3. Classification: Why K-Means Clustering?")
+    st.markdown("### 4. K-Means Clustering Specification (Macro Archetypes)")
     st.markdown("""
-    Once we plotted every country on a scatterplot (Regulation vs. SoV Score), we needed to categorize them into four distinct geopolitical archetypes (Tokenization Hubs, Leapfroggers, Grassroot demands, and Low Demand Economies).
+    To objectively classify countries into our four geopolitical archetypes without relying on arbitrary human threshold lines, we utilize unsupervised **K-Means Clustering**:
+    1. We isolate the two mapping axes: The `regulation` score (X-Axis) and the `Index_Score` (Y-Axis).
+    2. We apply `StandardScaler` to both axes. This is critical: it ensures that the larger 0-100 scale of the Y-Axis does not mathematically overpower the smaller 0-8 scale of the X-Axis during distance calculations.
+    3. We instruct the algorithm to find exactly four clusters (`n_clusters=4`). The algorithm measures the spatial distance between every country and organically groups them based on mathematical density.
+    4. The coordinates of the resulting four centroids are mathematically sorted into quadrants (Top-Left, Top-Right, Bottom-Left, Bottom-Right) and assigned to their respective behavioral labels: **Grassroot demands**, **Leapfroggers**, **Low Demand Economies**, and **Tokenization Hubs**.
+    """)
     
-    Historically, analysts do this by manually drawing a crosshair on the graph (e.g., splitting it exactly at 50 on the Y-Axis and 4.0 on the X-Axis). However, this is an arbitrary guess that doesn't respect how the global economy actually behaves.
-    
-    Instead, we used a **K-Means Clustering Algorithm**. 
-    
-    **What is K-Means?** It is an algorithm that groups data points into clusters based on their mathematical similarity. We instructed the algorithm to find exactly four centers of gravity (called centroids). The algorithm measured the spatial distance between every single country and organically grouped them based on mathematical density. This objectively draws boundaries around natural economic families rather than relying on an arbitrary human grid. 
+    st.divider()
+
+    st.markdown("### 5. The Institutional Matrix (\"Why vs. Who\")")
+    st.markdown("""
+    We calculate a separate, third behavioral model that abandons formal regulation entirely to measure underlying institutional dynamics.
+    1. Five input variables (`Value_per_Capita`, `Inflation`, `Financial_Closedness`, `Banking_Concentration_5`, and `Crypto_Adoption_Rank`) are independently standardized into Z-Scores.
+    2. **The Y-Axis ("Why" - Survival vs. Optimization):** We calculate `Z_Value_per_Capita - Z_Inflation - Z_Financial_Closedness`. High wealth pulls a country UP (Optimization), while high inflation and financial closedness pull it DOWN (Survival).
+    3. **The X-Axis ("Who" - Market vs. Government):** We calculate `Z_Banking_Concentration + Z_Crypto_Adoption_Rank`. High banking concentration pulls a country RIGHT (State-Driven), while high grassroots adoption ranks pull it LEFT (Market-Driven).
+    4. We apply `StandardScaler` to these new X and Y coordinates and run the K-Means algorithm (`n_clusters=4`) to dynamically map countries into four distinct institutional boxes: **The Gridlocked Giants**, **Jurisdictional Arbitrageurs**, **Life-Raft Leapfroggers**, and **Sovereign Controllers**.
     """)
 
 # ==========================================
@@ -715,7 +729,7 @@ with col_foot1:
 with col_foot2:
     st.markdown("#### ⚙️ Quick Methodology Summary")
     st.markdown("""
-    * **Data Pipeline:** Aggregates macro data from 4 leading global institutions to build a comprehensive macroeconomic dataset.
+    * **Data Pipeline:** Aggregates macro data from 6 leading global institutions. Hyper-outliers (e.g. VEN, ZWE) are intentionally retained to accurately reflect global macroeconomic extremes without clipping.
     * **SoV Necessity Index:** Baseline weights are mathematically derived using **Principal Component Analysis (PCA)** to prioritize systemic closedness, actively removing human guessing.
     * **Machine Learning Archetypes:** Unsupervised **K-Means clustering ($k=4$)** calculates spatial distances to dynamically group countries into natural economic families, avoiding arbitrary 50/50 threshold lines.
     """)
