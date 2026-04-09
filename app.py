@@ -317,7 +317,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 with tab1:
     st.markdown("<div class='model-toggle'>", unsafe_allow_html=True)
     st.select_slider(
-        "**🕹️ Use slider to apply different model weights to the analysis**", 
+        "**🕹️ Use slider to apply different model weights to the analysis. The very left reflects our PCA weights, the very right equal weigths.**", 
         options=slider_options,
         key='slider_tab1',
         on_change=sync_sliders,
@@ -361,7 +361,6 @@ with tab1:
         c1 = st.selectbox("📍 Select Country A", y_countries, index=y_countries.index("United States") if "United States" in y_countries else 0, key="t1_c1")
         r1 = df[df['Country'] == c1].iloc[0]
         st.markdown(f"### {r1['Flag']} {c1} Snapshot")
-        st.markdown("<div class='snapshot-box'>", unsafe_allow_html=True)
         st.metric("Macro Archetype", f"{r1['Active_Archetype']}")
         m2, m3, m4, m5 = st.columns(4)
         m2.metric("Active SoV Score", f"{r1['Active_Index_Score']:.1f}")
@@ -418,6 +417,7 @@ with tab2:
     styled_df = df_tab2.style.apply(style_rows_by_archetype, axis=1)
     
     st.dataframe(styled_df, use_container_width=True, height=500, column_config={
+        "Country_Flag": st.column_config.TextColumn("Country"),
         "Active_Archetype": st.column_config.TextColumn("🏛️ Active Archetype"),
         "Active_Index_Score": st.column_config.ProgressColumn("🎯 Active Score", min_value=0, max_value=100, format="%.1f"),
         "PCA_Index_Score": st.column_config.NumberColumn("📊 Base PCA Score", format="%.1f"),
@@ -484,23 +484,22 @@ with tab3:
     with c1:
         st.markdown("### 🔴 Grassroot Adopters")
         st.markdown("""
-        **Vibe: Survival/Control + State-Driven** These jurisdictions feature a high macroeconomic necessity for unbrokered assets (driven by inflation or capital controls), generating massive organic market demand from citizens. However, adoption is actively suppressed or tightly controlled through strict governmental frameworks. The state recognizes the utility of decentralized technology (often to bypass Western financial rails like SWIFT), but implements it strictly via top-down surveillance models (like CBDCs) rather than open, permissionless frameworks.
+        **Demand / High-Constraint, State-Led** Jurisdictions where macroeconomic pressures—such as sustained inflation, currency instability, or capital controls—create strong demand for alternative financial infrastructure and digital assets. But adoption is typically managed within governmental frameworks rather than through open market development. In these settings, authorities may recognize the functional utility of blockchain-based technologies, particularly for payments, settlement, or reducing reliance on external financial networks, while favoring centralized, state-supervised implementations over permissionless models.
         """)
         
         st.markdown("### 🟣 Low Demand Economies")
         st.markdown("""
-        **Vibe: Market Indifference** These regions sit at the intersection of low macroeconomic distress and low regulatory clarity. With relatively stable local currencies and accessible traditional banking, everyday citizens lack the acute "survival" catalyst needed to organically adopt unbrokered digital assets. Because the grassroots demand is low, local governments have little incentive or urgency to proactively draft comprehensive digital asset frameworks.
+        **Market Indifference** These regions sit at the intersection of low macroeconomic distress and low regulatory clarity. With relatively stable local currencies and accessible traditional banking, everyday citizens lack the acute "survival" catalyst needed to organically adopt unbrokered digital assets. Because the grassroots demand is low, local governments have little incentive or urgency to proactively draft comprehensive digital asset frameworks.
         """)
-
     with c2:
         st.markdown("### 🟢 Leapfroggers")
         st.markdown("""
-        **Vibe: Survival + Market-Driven** Leapfroggers are environments experiencing severe fiat devaluation or extreme financial closedness. In these regions, unbrokered assets are not a speculative vehicle, but a literal "life raft." Everyday citizens bypass failing legacy banking systems entirely, organically adopting stablecoins and decentralized rails to protect their wealth. Crucially, the government responds to this undeniable grassroots reality by drafting accommodating regulations to capture, rather than combat, the capital flow.
+        **Adaptive, Market-Driven** Jurisdictions with relatively strong regulatory clarity for digital assets combined with high inflation, currency instability, or restrictions on cross-border transactions. In these settings, tokenized assets and blockchain-based financial infrastructure often develop not solely as investment vehicles, but as practical mechanisms for value preservation, liquidity access, and transaction efficiency. Adoption may be driven by households, firms, and financial intermediaries seeking alternatives to legacy systems that are either unstable, costly, or limited in their ability to support international flows.
         """)
 
         st.markdown("### 🔵 Tokenization Hubs")
         st.markdown("""
-        **Vibe: Optimization + Institutional Arbitrage** These are wealthy, stable, financial hubs. Because inflation is low and capital mobility is high, retail demand for "life raft" crypto is negligible. Instead, the push for tokenization in these jurisdictions is entirely institutional. Governments here write crystal-clear, proactive regulations designed to lure global capital and traditional finance (TradFi) institutions seeking efficiency gains, operational optimization, and jurisdictional arbitrage.
+        **Optimization + Institutional Arbitrage** These are wealthy, stable, financial hubs. Because inflation is low and capital mobility is high, retail demand for "life raft" crypto is negligible. Instead, the push for tokenization in these jurisdictions is entirely institutional. Governments here are enacting regulations designed to lure global capital and traditional finance (TradFi) institutions seeking efficiency gains, operational optimization, and jurisdictional arbitrage.
         """)
 
 # ==========================================
@@ -509,9 +508,7 @@ with tab3:
 with tab4:
     st.header("The \"What-If\" Simulator")
     st.markdown("""
-    Our baseline weights were determined by **Principal Component Analysis (PCA)**. PCA is a machine learning algorithm that mathematically discovers the true variance within the global economy to automatically weight each variable without human bias. 
-    
-    To see the effects of changes in these inputs, select a country and dynamically shift its core parameters—or override the global PCA weights—to see how these changes mathematically redefine that country within the global landscape.
+    Our baseline weights were determined by **Principal Component Analysis (PCA)**. PCA is a machine learning algorithm that mathematically discovers the true variance within the global economy to automatically weight each variable without human bias. To see the effects of changes in these inputs, select a country and dynamically shift its core parameters—or override the global PCA weights—to see how these changes mathematically redefine that country within the global landscape.
     """)
     st.divider()
     
