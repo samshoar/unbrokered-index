@@ -374,7 +374,6 @@ with tab1:
         if c2 != "(None)":
             r2 = df[df['Country'] == c2].iloc[0]
             st.markdown(f"### {r2['Flag']} {c2} Snapshot")
-            st.markdown("<div class='snapshot-box'>", unsafe_allow_html=True)
             st.metric("Macro Archetype", f"{r2['Active_Archetype']}")
             m2b, m3b, m4b, m5b = st.columns(4)
             m2b.metric("Active SoV Score", f"{r2['Active_Index_Score']:.1f}")
