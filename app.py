@@ -391,7 +391,7 @@ with tab1:
 with tab2:
     st.markdown("<div class='model-toggle'>", unsafe_allow_html=True)
     st.select_slider(
-        "**🕹️ Use slider to apply different model weights to the analysis**", 
+        "**🕹️ Use slider to apply different model weights to the analysis. The very left reflects our PCA weights, the very right equal weigths.**", 
         options=slider_options,
         key='slider_tab2',
         on_change=sync_sliders,
@@ -434,7 +434,7 @@ with tab2:
 with tab3:
     st.markdown("<div class='model-toggle'>", unsafe_allow_html=True)
     st.select_slider(
-        "**🕹️ Use slider to apply different model weights to the analysis**", 
+        "**🕹️ Use slider to apply different model weights to the analysis. The very left reflects our PCA weights, the very right equal weigths.**", 
         options=slider_options,
         key='slider_tab3',
         on_change=sync_sliders,
@@ -484,22 +484,22 @@ with tab3:
     with c1:
         st.markdown("### 🔴 Grassroot Adopters")
         st.markdown("""
-        **Demand / High-Constraint, State-Led** Jurisdictions where macroeconomic pressures—such as sustained inflation, currency instability, or capital controls—create strong demand for alternative financial infrastructure and digital assets. But adoption is typically managed within governmental frameworks rather than through open market development. In these settings, authorities may recognize the functional utility of blockchain-based technologies, particularly for payments, settlement, or reducing reliance on external financial networks, while favoring centralized, state-supervised implementations over permissionless models.
+        **Demand / High-Constraint, State-Led:** Jurisdictions where macroeconomic pressures—such as sustained inflation, currency instability, or capital controls—create strong demand for alternative financial infrastructure and digital assets. But adoption is typically managed within governmental frameworks rather than through open market development. In these settings, authorities may recognize the functional utility of blockchain-based technologies, particularly for payments, settlement, or reducing reliance on external financial networks, while favoring centralized, state-supervised implementations over permissionless models.
         """)
         
         st.markdown("### 🟣 Low Demand Economies")
         st.markdown("""
-        **Market Indifference** These regions sit at the intersection of low macroeconomic distress and low regulatory clarity. With relatively stable local currencies and accessible traditional banking, everyday citizens lack the acute "survival" catalyst needed to organically adopt unbrokered digital assets. Because the grassroots demand is low, local governments have little incentive or urgency to proactively draft comprehensive digital asset frameworks.
+        **Market Indifference:** These regions sit at the intersection of low macroeconomic distress and low regulatory clarity. With relatively stable local currencies and accessible traditional banking, everyday citizens lack the acute "survival" catalyst needed to organically adopt unbrokered digital assets. Because the grassroots demand is low, local governments have little incentive or urgency to proactively draft comprehensive digital asset frameworks.
         """)
     with c2:
         st.markdown("### 🟢 Leapfroggers")
         st.markdown("""
-        **Adaptive, Market-Driven** Jurisdictions with relatively strong regulatory clarity for digital assets combined with high inflation, currency instability, or restrictions on cross-border transactions. In these settings, tokenized assets and blockchain-based financial infrastructure often develop not solely as investment vehicles, but as practical mechanisms for value preservation, liquidity access, and transaction efficiency. Adoption may be driven by households, firms, and financial intermediaries seeking alternatives to legacy systems that are either unstable, costly, or limited in their ability to support international flows.
+        **Adaptive, Market-Driven:** Jurisdictions with relatively strong regulatory clarity for digital assets combined with high inflation, currency instability, or restrictions on cross-border transactions. In these settings, tokenized assets and blockchain-based financial infrastructure often develop not solely as investment vehicles, but as practical mechanisms for value preservation, liquidity access, and transaction efficiency. Adoption may be driven by households, firms, and financial intermediaries seeking alternatives to legacy systems that are either unstable, costly, or limited in their ability to support international flows.
         """)
 
         st.markdown("### 🔵 Tokenization Hubs")
         st.markdown("""
-        **Optimization + Institutional Arbitrage** These are wealthy, stable, financial hubs. Because inflation is low and capital mobility is high, retail demand for "life raft" crypto is negligible. Instead, the push for tokenization in these jurisdictions is entirely institutional. Governments here are enacting regulations designed to lure global capital and traditional finance (TradFi) institutions seeking efficiency gains, operational optimization, and jurisdictional arbitrage.
+        **Optimization + Institutional Arbitrage:** These are wealthy, stable, financial hubs. Because inflation is low and capital mobility is high, retail demand for "life raft" crypto is negligible. Instead, the push for tokenization in these jurisdictions is entirely institutional. Governments here are enacting regulations designed to lure global capital and traditional finance (TradFi) institutions seeking efficiency gains, operational optimization, and jurisdictional arbitrage.
         """)
 
 # ==========================================
