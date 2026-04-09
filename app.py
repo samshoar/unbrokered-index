@@ -479,37 +479,91 @@ with tab3:
     
 st.subheader("Archetype Breakdown")
     
-# --- ROW 1 ---
-r1_c1, r1_c2 = st.columns(2)
+# ==========================================
+# TAB 3: MACRO ARCHETYPES (INTERACTIVE)
+# ==========================================
+with tab3:
+    st.markdown("<div class='model-toggle'>", unsafe_allow_html=True)
+    st.select_slider(
+        "**🕹️ Use slider to apply different model weights to the analysis**", 
+        options=slider_options,
+        key='slider_tab3',
+        on_change=sync_sliders,
+        args=('slider_tab3',)
+    )
+    st.markdown(get_permanent_label(), unsafe_allow_html=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.header("Propensity Archetypes in Clusters")
+    st.markdown("By mapping SoV index against our Regulatory Score, countries fall into four different categories.")
+
+    fig_quad = px.scatter(
+        df, x='regulation_jittered', y='Active_Index_Score', color='Active_Archetype',
+        color_discrete_map=color_map, hover_name='Country_Flag',
+        text='ISO Code',
+        labels={'Active_Index_Score': 'SoV Index Score', 'regulation_jittered': 'Regulation', 'Inflation': 'Inflation (%)', 'Financial_Closedness': 'Financial Closedness', 'Crypto_Adoption_Rank': 'Crypto Adoption Rank', 'Active_Archetype': 'Archetype'},
+        hover_data={'regulation_jittered': False, 'Active_Archetype': True, 'Active_Index_Score': ':.1f', 'regulation': ':.1f', 'Inflation': ':.1f', 'Financial_Closedness': ':.2f', 'Crypto_Adoption_Rank': True},
+        size_max=15
+    )
+
+    fig_quad.update_traces(
+        textposition='top center',
+        textfont=dict(size=10, color='#2C3E50'),
+        marker=dict(size=14, line=dict(width=1, color='black')), 
+        opacity=0.85
+    )
+
+    fig_quad.add_annotation(x=2.0, y=102, text="<b>Grassroot Adopters</b>", showarrow=False, font=dict(color="#e74c3c", size=15))
+    fig_quad.add_annotation(x=6.0, y=102, text="<b>Leapfroggers</b>", showarrow=False, font=dict(color="#2ecc71", size=15))
+    fig_quad.add_annotation(x=2.0, y=-2, text="<b>Low Demand Economies</b>", showarrow=False, font=dict(color="#9b59b6", size=15))
+    fig_quad.add_annotation(x=6.0, y=-2, text="<b>Tokenization Hubs</b>", showarrow=False, font=dict(color="#3498db", size=15))
+
+    fig_quad.update_layout(
+        xaxis_title="<b>Formal Regulatory Framework Score (0-8)</b>",
+        yaxis_title="<b>Store of Value Necessity Index (Active Model)</b>",
+        xaxis=dict(range=[-0.5, 8.5], tickmode='linear', tick0=0, dtick=1, showgrid=False, zeroline=False),
+        yaxis=dict(range=[-5, 105], showgrid=False, zeroline=False),
+        plot_bgcolor="white", height=700, legend_title_text="Macro Archetypes", margin=dict(t=30, b=30, l=30, r=30)
+    )
+
+    st.plotly_chart(fig_quad, use_container_width=True)
+
+    st.divider()
     
-with r1_c1:
-    st.markdown("### 🔴 Grassroot Adopters")
-    st.markdown("""
-    **Demand / High-Constraint, State-Led:** Jurisdictions where macroeconomic pressures—such as sustained inflation, currency instability, or capital controls—create strong demand for alternative financial infrastructure and digital assets. But adoption is typically managed within governmental frameworks rather than through open market development. In these settings, authorities may recognize the functional utility of blockchain-based technologies, particularly for payments, settlement, or reducing reliance on external financial networks, while favoring centralized, state-supervised implementations over permissionless models.
-    """)
+    st.subheader("Archetype Breakdown")
+    
+    # --- ROW 1 ---
+    r1_c1, r1_c2 = st.columns(2)
+    
+    with r1_c1:
+        st.markdown("### 🔴 Grassroot Adopters")
+        st.markdown("""
+        **Demand / High-Constraint, State-Led:** Jurisdictions where macroeconomic pressures—such as sustained inflation, currency instability, or capital controls—create strong demand for alternative financial infrastructure and digital assets. But adoption is typically managed within governmental frameworks rather than through open market development. In these settings, authorities may recognize the functional utility of blockchain-based technologies, particularly for payments, settlement, or reducing reliance on external financial networks, while favoring centralized, state-supervised implementations over permissionless models.
+        """)
         
-with r1_c2:
-    st.markdown("### 🟢 Leapfroggers")
-    st.markdown("""
-    **Adaptive, Market-Driven:** Jurisdictions with relatively strong regulatory clarity for digital assets combined with high inflation, currency instability, or restrictions on cross-border transactions. In these settings, tokenized assets and blockchain-based financial infrastructure often develop not solely as investment vehicles, but as practical mechanisms for value preservation, liquidity access, and transaction efficiency. Adoption may be driven by households, firms, and financial intermediaries seeking alternatives to legacy systems that are either unstable, costly, or limited in their ability to support international flows.
-    """)
+    with r1_c2:
+        st.markdown("### 🟢 Leapfroggers")
+        st.markdown("""
+        **Adaptive, Market-Driven:** Jurisdictions with relatively strong regulatory clarity for digital assets combined with high inflation, currency instability, or restrictions on cross-border transactions. In these settings, tokenized assets and blockchain-based financial infrastructure often develop not solely as investment vehicles, but as practical mechanisms for value preservation, liquidity access, and transaction efficiency. Adoption may be driven by households, firms, and financial intermediaries seeking alternatives to legacy systems that are either unstable, costly, or limited in their ability to support international flows.
+        """)
 
-st.markdown("<br>", unsafe_allow_html=True) # Adds a clean visual spacer between the rows
+    st.markdown("<br>", unsafe_allow_html=True) 
 
-# --- ROW 2 ---
-r2_c1, r2_c2 = st.columns(2)
+    # --- ROW 2 ---
+    r2_c1, r2_c2 = st.columns(2)
     
-with r2_c1:
-    st.markdown("### 🟣 Low Demand Economies")
-    st.markdown("""
-    **Market Indifference:** These regions sit at the intersection of low macroeconomic distress and low regulatory clarity. With relatively stable local currencies and accessible traditional banking, everyday citizens lack the acute "survival" catalyst needed to organically adopt unbrokered digital assets. Because the grassroots demand is low, local governments have little incentive or urgency to proactively draft comprehensive digital asset frameworks.
-    """)
+    with r2_c1:
+        st.markdown("### 🟣 Low Demand Economies")
+        st.markdown("""
+        **Market Indifference:** These regions sit at the intersection of low macroeconomic distress and low regulatory clarity. With relatively stable local currencies and accessible traditional banking, everyday citizens lack the acute "survival" catalyst needed to organically adopt unbrokered digital assets. Because the grassroots demand is low, local governments have little incentive or urgency to proactively draft comprehensive digital asset frameworks.
+        """)
 
-with r2_c2:
-    st.markdown("### 🔵 Tokenization Hubs")
-    st.markdown("""
-    **Optimization + Institutional Arbitrage:** These are wealthy, stable, financial hubs. Because inflation is low and capital mobility is high, retail demand for "life raft" crypto is negligible. Instead, the push for tokenization in these jurisdictions is entirely institutional. Governments here are enacting regulations designed to lure global capital and traditional finance (TradFi) institutions seeking efficiency gains, operational optimization, and jurisdictional arbitrage.
-    """)
+    with r2_c2:
+        st.markdown("### 🔵 Tokenization Hubs")
+        st.markdown("""
+        **Optimization + Institutional Arbitrage:** These are wealthy, stable, financial hubs. Because inflation is low and capital mobility is high, retail demand for "life raft" crypto is negligible. Instead, the push for tokenization in these jurisdictions is entirely institutional. Governments here are enacting regulations designed to lure global capital and traditional finance (TradFi) institutions seeking efficiency gains, operational optimization, and jurisdictional arbitrage.
+        """)
+        
 # ==========================================
 # TAB 4: POLICY SIMULATOR (WHAT-IF)
 # ==========================================
