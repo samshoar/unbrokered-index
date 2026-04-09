@@ -290,6 +290,11 @@ cluster_map_active = {top_2_act[0][0]: "Grassroot Adopters", top_2_act[1][0]: "L
 df['Active_Archetype'] = kmeans_active.predict(cluster_scaled_active)
 df['Active_Archetype'] = df['Active_Archetype'].map(cluster_map_active)
 
+# Helper function to generate the permanent label block under sliders
+def get_permanent_label():
+    clean_label = st.session_state.model_slider.replace('PCA Weights ← ', '').replace(' → Equal Weights', '')
+    return f"<div style='text-align: center; font-size: 1.15rem; font-weight: 800; color: #2C3E50; margin-top: 10px; padding: 10px; background-color: #FFFFFF; border-radius: 5px; border: 1px solid #E0E5EC;'>🎯 Active Model Weights: {clean_label}</div>"
+
 # ==========================================
 # APP HEADER
 # ==========================================
