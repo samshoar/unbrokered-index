@@ -290,10 +290,6 @@ cluster_map_active = {top_2_act[0][0]: "Grassroot Adopters", top_2_act[1][0]: "L
 df['Active_Archetype'] = kmeans_active.predict(cluster_scaled_active)
 df['Active_Archetype'] = df['Active_Archetype'].map(cluster_map_active)
 
-# Helper function to generate the permanent label block under sliders
-def get_permanent_label():
-    clean_label = st.session_state.model_slider.replace('PCA Weights ← ', '').replace(' → Equal Weights', '')
-    return f"<div style='text-align: center; font-size: 1.15rem; font-weight: 800; color: #2C3E50; margin-top: 10px; padding: 10px; background-color: #FFFFFF; border-radius: 5px; border: 1px solid #E0E5EC;'>🎯 Active Model Weights: {clean_label}</div>"
 
 # ==========================================
 # APP HEADER
@@ -327,7 +323,6 @@ with tab1:
         on_change=sync_sliders,
         args=('slider_tab1',)
     )
-    st.markdown(get_permanent_label(), unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
     fig_map = px.choropleth(
@@ -403,7 +398,6 @@ with tab2:
         on_change=sync_sliders,
         args=('slider_tab2',)
     )
-    st.markdown(get_permanent_label(), unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
     display_cols = ['Country_Flag', 'Active_Archetype', 'Active_Index_Score', 'PCA_Index_Score', 'Equal_Index_Score', 'regulation', 'Crypto_Adoption_Rank', 'Inflation', 'Financial_Closedness']
@@ -446,7 +440,6 @@ with tab3:
         on_change=sync_sliders,
         args=('slider_tab3',)
     )
-    st.markdown(get_permanent_label(), unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.header("Propensity Archetypes in Clusters")
