@@ -175,7 +175,7 @@ for i in range(0, 101, 5):
     wi = (1 - a) * 0.7 + a * 33.333
     wa = (1 - a) * 46.8 + a * 33.333
     
-    label = f"Controls: {wc:.1f}% | Adoption: {wa:.1f}% | Inflation: {wi:.1f}%"
+    label = f"PCA Weights ← Controls: {wc:.1f}% | Adoption: {wa:.1f}% | Inflation: {wi:.1f}% → Equal Weights"
     slider_options.append(label)
     alpha_map[label] = a
 
@@ -290,6 +290,10 @@ cluster_map_active = {top_2_act[0][0]: "Grassroot Adopters", top_2_act[1][0]: "L
 df['Active_Archetype'] = kmeans_active.predict(cluster_scaled_active)
 df['Active_Archetype'] = df['Active_Archetype'].map(cluster_map_active)
 
+# Helper function to generate the permanent label block under sliders
+def get_permanent_label():
+    clean_label = st.session_state.model_slider.replace('PCA Weights ← ', '').replace(' → Equal Weights', '')
+    return f"<div style='text-align: center; font-size: 1.15rem; font-weight: 800; color: #2C3E50; margin-top: 10px; padding: 10px; background-color: #FFFFFF; border-radius: 5px; border: 1px solid #E0E5EC;'>🎯 Active Model Weights: {clean_label}</div>"
 
 # ==========================================
 # APP HEADER
@@ -317,12 +321,13 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 with tab1:
     st.markdown("<div class='model-toggle'>", unsafe_allow_html=True)
     st.select_slider(
-        "**🕹️ Use slider to apply different model weights to the analysis. The very left reflects our PCA weights, the very right equal weigths.**", 
+        "**🕹️ Use slider to apply different model weights to the analysis**", 
         options=slider_options,
         key='slider_tab1',
         on_change=sync_sliders,
         args=('slider_tab1',)
     )
+    st.markdown(get_permanent_label(), unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
     fig_map = px.choropleth(
@@ -361,6 +366,7 @@ with tab1:
         c1 = st.selectbox("📍 Select Country A", y_countries, index=y_countries.index("United States") if "United States" in y_countries else 0, key="t1_c1")
         r1 = df[df['Country'] == c1].iloc[0]
         st.markdown(f"### {r1['Flag']} {c1} Snapshot")
+        st.markdown("<div class='snapshot-box'>", unsafe_allow_html=True)
         st.metric("Macro Archetype", f"{r1['Active_Archetype']}")
         m2, m3, m4, m5 = st.columns(4)
         m2.metric("Active SoV Score", f"{r1['Active_Index_Score']:.1f}")
@@ -374,6 +380,7 @@ with tab1:
         if c2 != "(None)":
             r2 = df[df['Country'] == c2].iloc[0]
             st.markdown(f"### {r2['Flag']} {c2} Snapshot")
+            st.markdown("<div class='snapshot-box'>", unsafe_allow_html=True)
             st.metric("Macro Archetype", f"{r2['Active_Archetype']}")
             m2b, m3b, m4b, m5b = st.columns(4)
             m2b.metric("Active SoV Score", f"{r2['Active_Index_Score']:.1f}")
@@ -390,12 +397,13 @@ with tab1:
 with tab2:
     st.markdown("<div class='model-toggle'>", unsafe_allow_html=True)
     st.select_slider(
-        "**🕹️ Use slider to apply different model weights to the analysis. The very left reflects our PCA weights, the very right equal weigths.**", 
+        "**🕹️ Use slider to apply different model weights to the analysis**", 
         options=slider_options,
         key='slider_tab2',
         on_change=sync_sliders,
         args=('slider_tab2',)
     )
+    st.markdown(get_permanent_label(), unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
     display_cols = ['Country_Flag', 'Active_Archetype', 'Active_Index_Score', 'PCA_Index_Score', 'Equal_Index_Score', 'regulation', 'Crypto_Adoption_Rank', 'Inflation', 'Financial_Closedness']
@@ -416,7 +424,6 @@ with tab2:
     styled_df = df_tab2.style.apply(style_rows_by_archetype, axis=1)
     
     st.dataframe(styled_df, use_container_width=True, height=500, column_config={
-        "Country_Flag": st.column_config.TextColumn("Country"),
         "Active_Archetype": st.column_config.TextColumn("🏛️ Active Archetype"),
         "Active_Index_Score": st.column_config.ProgressColumn("🎯 Active Score", min_value=0, max_value=100, format="%.1f"),
         "PCA_Index_Score": st.column_config.NumberColumn("📊 Base PCA Score", format="%.1f"),
@@ -427,58 +434,6 @@ with tab2:
         "Financial_Closedness": st.column_config.NumberColumn("🏦 Raw Closedness Score", format="%.2f")
     })
 
-# ==========================================
-# TAB 3: MACRO ARCHETYPES (INTERACTIVE)
-# ==========================================
-with tab3:
-    st.markdown("<div class='model-toggle'>", unsafe_allow_html=True)
-    st.select_slider(
-        "**🕹️ Use slider to apply different model weights to the analysis. The very left reflects our PCA weights, the very right equal weigths.**", 
-        options=slider_options,
-        key='slider_tab3',
-        on_change=sync_sliders,
-        args=('slider_tab3',)
-    )
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    st.header("Propensity Archetypes in Clusters")
-    st.markdown("By mapping SoV index against our Regulatory Score, countries fall into four different categories.")
-
-    fig_quad = px.scatter(
-        df, x='regulation_jittered', y='Active_Index_Score', color='Active_Archetype',
-        color_discrete_map=color_map, hover_name='Country_Flag',
-        text='ISO Code',
-        labels={'Active_Index_Score': 'SoV Index Score', 'regulation_jittered': 'Regulation', 'Inflation': 'Inflation (%)', 'Financial_Closedness': 'Financial Closedness', 'Crypto_Adoption_Rank': 'Crypto Adoption Rank', 'Active_Archetype': 'Archetype'},
-        hover_data={'regulation_jittered': False, 'Active_Archetype': True, 'Active_Index_Score': ':.1f', 'regulation': ':.1f', 'Inflation': ':.1f', 'Financial_Closedness': ':.2f', 'Crypto_Adoption_Rank': True},
-        size_max=15
-    )
-
-    fig_quad.update_traces(
-        textposition='top center',
-        textfont=dict(size=10, color='#2C3E50'),
-        marker=dict(size=14, line=dict(width=1, color='black')), 
-        opacity=0.85
-    )
-
-    fig_quad.add_annotation(x=2.0, y=102, text="<b>Grassroot Adopters</b>", showarrow=False, font=dict(color="#e74c3c", size=15))
-    fig_quad.add_annotation(x=6.0, y=102, text="<b>Leapfroggers</b>", showarrow=False, font=dict(color="#2ecc71", size=15))
-    fig_quad.add_annotation(x=2.0, y=-2, text="<b>Low Demand Economies</b>", showarrow=False, font=dict(color="#9b59b6", size=15))
-    fig_quad.add_annotation(x=6.0, y=-2, text="<b>Tokenization Hubs</b>", showarrow=False, font=dict(color="#3498db", size=15))
-
-    fig_quad.update_layout(
-        xaxis_title="<b>Formal Regulatory Framework Score (0-8)</b>",
-        yaxis_title="<b>Store of Value Necessity Index (Active Model)</b>",
-        xaxis=dict(range=[-0.5, 8.5], tickmode='linear', tick0=0, dtick=1, showgrid=False, zeroline=False),
-        yaxis=dict(range=[-5, 105], showgrid=False, zeroline=False),
-        plot_bgcolor="white", height=700, legend_title_text="Macro Archetypes", margin=dict(t=30, b=30, l=30, r=30)
-    )
-
-    st.plotly_chart(fig_quad, use_container_width=True)
-
-    st.divider()
-    
-st.subheader("Archetype Breakdown")
-    
 # ==========================================
 # TAB 3: MACRO ARCHETYPES (INTERACTIVE)
 # ==========================================
@@ -563,14 +518,16 @@ with tab3:
         st.markdown("""
         **Optimization + Institutional Arbitrage:** These are wealthy, stable, financial hubs. Because inflation is low and capital mobility is high, retail demand for "life raft" crypto is negligible. Instead, the push for tokenization in these jurisdictions is entirely institutional. Governments here are enacting regulations designed to lure global capital and traditional finance (TradFi) institutions seeking efficiency gains, operational optimization, and jurisdictional arbitrage.
         """)
-        
+
 # ==========================================
 # TAB 4: POLICY SIMULATOR (WHAT-IF)
 # ==========================================
 with tab4:
     st.header("The \"What-If\" Simulator")
     st.markdown("""
-    Our baseline weights were determined by **Principal Component Analysis (PCA)**. PCA is a machine learning algorithm that mathematically discovers the true variance within the global economy to automatically weight each variable without human bias. To see the effects of changes in these inputs, select a country and dynamically shift its core parameters—or override the global PCA weights—to see how these changes mathematically redefine that country within the global landscape.
+    Our baseline weights were determined by **Principal Component Analysis (PCA)**. PCA is a machine learning algorithm that mathematically discovers the true variance within the global economy to automatically weight each variable without human bias. 
+    
+    To see the effects of changes in these inputs, select a country and dynamically shift its core parameters—or override the global PCA weights—to see how these changes mathematically redefine that country within the global landscape.
     """)
     st.divider()
     
