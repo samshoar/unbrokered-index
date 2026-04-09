@@ -20,11 +20,11 @@ st.set_page_config(
 st.markdown("""
     <style>
         h1, h2, h3 { font-family: 'Inter', sans-serif; }
-        [data-testid="stMetricValue"] { color: #0052FF !important; font-weight: 800; font-size: 1.8rem;}
+        [data-testid="stMetricValue"] { color: #2C3E50 !important; font-weight: 800; font-size: 1.8rem;}
         .stTabs [aria-selected="true"] {
             background-color: #F0F4F8;
-            border-bottom: 3px solid #0052FF !important;
-            color: #0052FF !important;
+            border-bottom: 3px solid #2C3E50 !important;
+            color: #2C3E50 !important;
             font-weight: bold;
         }
         .snapshot-box {
@@ -47,7 +47,7 @@ st.markdown("""
             padding: 15px 25px;
             border-radius: 8px;
             margin-bottom: 15px;
-            border-left: 5px solid #0052FF;
+            border-left: 5px solid #2C3E50;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -83,7 +83,7 @@ def get_flag(iso3):
     return chr(ord(iso2[0]) + 127397) + chr(ord(iso2[1]) + 127397)
 
 color_map = {
-    "Grassroot demands": "#e74c3c",   
+    "Grassroot Adopters": "#e74c3c",   
     "Leapfroggers": "#2ecc71",            
     "Low Demand Economies": "#9b59b6",    
     "Tokenization Hubs": "#3498db"                   
@@ -128,7 +128,7 @@ def load_data():
     top_2.sort(key=lambda x: x[1])
     bottom_2.sort(key=lambda x: x[1])
 
-    cluster_map_pca = {top_2[0][0]: "Grassroot demands", top_2[1][0]: "Leapfroggers", bottom_2[0][0]: "Low Demand Economies", bottom_2[1][0]: "Tokenization Hubs"}
+    cluster_map_pca = {top_2[0][0]: "Grassroot Adopters", top_2[1][0]: "Leapfroggers", bottom_2[0][0]: "Low Demand Economies", bottom_2[1][0]: "Tokenization Hubs"}
     df['PCA_Archetype'] = kmeans_pca.predict(cluster_scaled_pca)
     df['PCA_Archetype'] = df['PCA_Archetype'].map(cluster_map_pca)
 
@@ -149,7 +149,7 @@ def load_data():
     top_2_eq.sort(key=lambda x: x[1])
     bottom_2_eq.sort(key=lambda x: x[1])
 
-    cluster_map_eq = {top_2_eq[0][0]: "Grassroot demands", top_2_eq[1][0]: "Leapfroggers", bottom_2_eq[0][0]: "Low Demand Economies", bottom_2_eq[1][0]: "Tokenization Hubs"}
+    cluster_map_eq = {top_2_eq[0][0]: "Grassroot Adopters", top_2_eq[1][0]: "Leapfroggers", bottom_2_eq[0][0]: "Low Demand Economies", bottom_2_eq[1][0]: "Tokenization Hubs"}
     df['Equal_Archetype'] = kmeans_eq.predict(cluster_scaled_eq)
     df['Equal_Archetype'] = df['Equal_Archetype'].map(cluster_map_eq)
 
@@ -175,7 +175,7 @@ for i in range(0, 101, 5):
     wi = (1 - a) * 0.7 + a * 33.333
     wa = (1 - a) * 46.8 + a * 33.333
     
-    label = f"Controls: {wc:.1f}% | Adoption: {wa:.1f}% | Inflation: {wi:.1f}%"
+    label = f"PCA Weights ← Controls: {wc:.1f}% | Adoption: {wa:.1f}% | Inflation: {wi:.1f}% → Equal Weights"
     slider_options.append(label)
     alpha_map[label] = a
 
@@ -217,7 +217,7 @@ if 'pca_models' not in st.session_state:
     bottom_2.sort(key=lambda x: x[1])
 
     cluster_map_pca = {
-        top_2[0][0]: "Grassroot demands", top_2[1][0]: "Leapfroggers", 
+        top_2[0][0]: "Grassroot Adopters", top_2[1][0]: "Leapfroggers", 
         bottom_2[0][0]: "Low Demand Economies", bottom_2[1][0]: "Tokenization Hubs"
     }
 
@@ -286,7 +286,7 @@ top_2_act, bottom_2_act = ord_centers_act[:2], ord_centers_act[2:]
 top_2_act.sort(key=lambda x: x[1])
 bottom_2_act.sort(key=lambda x: x[1])
 
-cluster_map_active = {top_2_act[0][0]: "Grassroot demands", top_2_act[1][0]: "Leapfroggers", bottom_2_act[0][0]: "Low Demand Economies", bottom_2_act[1][0]: "Tokenization Hubs"}
+cluster_map_active = {top_2_act[0][0]: "Grassroot Adopters", top_2_act[1][0]: "Leapfroggers", bottom_2_act[0][0]: "Low Demand Economies", bottom_2_act[1][0]: "Tokenization Hubs"}
 df['Active_Archetype'] = kmeans_active.predict(cluster_scaled_active)
 df['Active_Archetype'] = df['Active_Archetype'].map(cluster_map_active)
 
@@ -317,7 +317,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 with tab1:
     st.markdown("<div class='model-toggle'>", unsafe_allow_html=True)
     st.select_slider(
-        "**🕹️ Model Interpolator: Scrub to dynamically shift the algorithmic weights**", 
+        "**🕹️ Use slider to apply different model weights to the analysis**", 
         options=slider_options,
         key='slider_tab1',
         on_change=sync_sliders,
@@ -361,6 +361,7 @@ with tab1:
         c1 = st.selectbox("📍 Select Country A", y_countries, index=y_countries.index("United States") if "United States" in y_countries else 0, key="t1_c1")
         r1 = df[df['Country'] == c1].iloc[0]
         st.markdown(f"### {r1['Flag']} {c1} Snapshot")
+        st.markdown("<div class='snapshot-box'>", unsafe_allow_html=True)
         st.metric("Macro Archetype", f"{r1['Active_Archetype']}")
         m2, m3, m4, m5 = st.columns(4)
         m2.metric("Active SoV Score", f"{r1['Active_Index_Score']:.1f}")
@@ -374,6 +375,7 @@ with tab1:
         if c2 != "(None)":
             r2 = df[df['Country'] == c2].iloc[0]
             st.markdown(f"### {r2['Flag']} {c2} Snapshot")
+            st.markdown("<div class='snapshot-box'>", unsafe_allow_html=True)
             st.metric("Macro Archetype", f"{r2['Active_Archetype']}")
             m2b, m3b, m4b, m5b = st.columns(4)
             m2b.metric("Active SoV Score", f"{r2['Active_Index_Score']:.1f}")
@@ -390,7 +392,7 @@ with tab1:
 with tab2:
     st.markdown("<div class='model-toggle'>", unsafe_allow_html=True)
     st.select_slider(
-        "**🕹️ Model Interpolator: Scrub to dynamically shift the algorithmic weights**", 
+        "**🕹️ Use slider to apply different model weights to the analysis**", 
         options=slider_options,
         key='slider_tab2',
         on_change=sync_sliders,
@@ -406,7 +408,7 @@ with tab2:
     
     def style_rows_by_archetype(row):
         arch = row['Active_Archetype']  
-        if arch == 'Grassroot demands': color = '#FDEAEA' 
+        if arch == 'Grassroot Adopters': color = '#FDEAEA' 
         elif arch == 'Leapfroggers': color = '#EAF8F1' 
         elif arch == 'Low Demand Economies': color = '#F4EDF7' 
         elif arch == 'Tokenization Hubs': color = '#EAF3FB' 
@@ -432,7 +434,7 @@ with tab2:
 with tab3:
     st.markdown("<div class='model-toggle'>", unsafe_allow_html=True)
     st.select_slider(
-        "**🕹️ Model Interpolator: Scrub to dynamically shift the algorithmic weights**", 
+        "**🕹️ Use slider to apply different model weights to the analysis**", 
         options=slider_options,
         key='slider_tab3',
         on_change=sync_sliders,
@@ -440,7 +442,7 @@ with tab3:
     )
     st.markdown("</div>", unsafe_allow_html=True)
 
-    st.header("Propensity Archetypes in Quadrants")
+    st.header("Propensity Archetypes in Clusters")
     st.markdown("By mapping SoV index against our Regulatory Score, countries fall into four different categories.")
 
     fig_quad = px.scatter(
@@ -459,7 +461,7 @@ with tab3:
         opacity=0.85
     )
 
-    fig_quad.add_annotation(x=2.0, y=102, text="<b>Grassroot demands</b>", showarrow=False, font=dict(color="#e74c3c", size=15))
+    fig_quad.add_annotation(x=2.0, y=102, text="<b>Grassroot Adopters</b>", showarrow=False, font=dict(color="#e74c3c", size=15))
     fig_quad.add_annotation(x=6.0, y=102, text="<b>Leapfroggers</b>", showarrow=False, font=dict(color="#2ecc71", size=15))
     fig_quad.add_annotation(x=2.0, y=-2, text="<b>Low Demand Economies</b>", showarrow=False, font=dict(color="#9b59b6", size=15))
     fig_quad.add_annotation(x=6.0, y=-2, text="<b>Tokenization Hubs</b>", showarrow=False, font=dict(color="#3498db", size=15))
@@ -480,7 +482,7 @@ with tab3:
     
     c1, c2 = st.columns(2)
     with c1:
-        st.markdown("### 🔴 Grassroot demands")
+        st.markdown("### 🔴 Grassroot Adopters")
         st.markdown("""
         **Vibe: Survival/Control + State-Driven** These jurisdictions feature a high macroeconomic necessity for unbrokered assets (driven by inflation or capital controls), generating massive organic market demand from citizens. However, adoption is actively suppressed or tightly controlled through strict governmental frameworks. The state recognizes the utility of decentralized technology (often to bypass Western financial rails like SWIFT), but implements it strictly via top-down surveillance models (like CBDCs) rather than open, permissionless frameworks.
         """)
@@ -507,7 +509,9 @@ with tab3:
 with tab4:
     st.header("The \"What-If\" Simulator")
     st.markdown("""
-    Our baseline weights were determined by **Principal Component Analysis (PCA)**. PCA is a machine learning algorithm that mathematically discovers the true variance within the global economy to automatically weight each variable without human bias. To see the effects of changes in these inputs, select a country and dynamically shift its core parameters—or override the global PCA weights—to see how these changes mathematically redefine that country within the global landscape.
+    Our baseline weights were determined by **Principal Component Analysis (PCA)**. PCA is a machine learning algorithm that mathematically discovers the true variance within the global economy to automatically weight each variable without human bias. 
+    
+    To see the effects of changes in these inputs, select a country and dynamically shift its core parameters—or override the global PCA weights—to see how these changes mathematically redefine that country within the global landscape.
     """)
     st.divider()
     
@@ -695,7 +699,18 @@ with tab5:
     1. We isolate the two mapping axes: The `regulation` score (X-Axis) and the `Index_Score` (Y-Axis).
     2. We apply `StandardScaler` to both axes. This is critical: it ensures that the larger 0-100 scale of the Y-Axis does not mathematically overpower the smaller 0-8 scale of the X-Axis during distance calculations.
     3. We instruct the algorithm to find exactly four clusters (`n_clusters=4`). The algorithm measures the spatial distance between every country and organically groups them based on mathematical density.
-    4. The coordinates of the resulting four centroids are mathematically sorted into quadrants (Top-Left, Top-Right, Bottom-Left, Bottom-Right) and assigned to their respective behavioral labels: **Grassroot demands**, **Leapfroggers**, **Low Demand Economies**, and **Tokenization Hubs**.
+    4. The coordinates of the resulting four centroids are mathematically sorted into quadrants (Top-Left, Top-Right, Bottom-Left, Bottom-Right) and assigned to their respective behavioral labels: **Grassroot Adopters**, **Leapfroggers**, **Low Demand Economies**, and **Tokenization Hubs**.
+    """)
+    
+    st.divider()
+
+    st.markdown("### 5. The Institutional Matrix (\"Why vs. Who\")")
+    st.markdown("""
+    We calculate a separate, third behavioral model that abandons formal regulation entirely to measure underlying institutional dynamics.
+    1. Five input variables (`Value_per_Capita`, `Inflation`, `Financial_Closedness`, `Banking_Concentration_5`, and `Crypto_Adoption_Rank`) are independently standardized into Z-Scores.
+    2. **The Y-Axis ("Why" - Survival vs. Optimization):** We calculate `Z_Value_per_Capita - Z_Inflation - Z_Financial_Closedness`. High wealth pulls a country UP (Optimization), while high inflation and financial closedness pull it DOWN (Survival).
+    3. **The X-Axis ("Who" - Market vs. Government):** We calculate `Z_Banking_Concentration + Z_Crypto_Adoption_Rank`. High banking concentration pulls a country RIGHT (State-Driven), while high grassroots adoption ranks pull it LEFT (Market-Driven).
+    4. We apply `StandardScaler` to these new X and Y coordinates and run the K-Means algorithm (`n_clusters=4`) to dynamically map countries into four distinct institutional boxes: **The Gridlocked Giants**, **Jurisdictional Arbitrageurs**, **Life-Raft Leapfroggers**, and **Sovereign Controllers**.
     """)
 
 # ==========================================
