@@ -290,11 +290,6 @@ cluster_map_active = {top_2_act[0][0]: "Grassroot Adopters", top_2_act[1][0]: "L
 df['Active_Archetype'] = kmeans_active.predict(cluster_scaled_active)
 df['Active_Archetype'] = df['Active_Archetype'].map(cluster_map_active)
 
-# Helper function to generate the permanent label block under sliders
-def get_permanent_label():
-    clean_label = st.session_state.model_slider.replace('PCA Weights ← ', '').replace(' → Equal Weights', '')
-    return f"<div style='text-align: center; font-size: 1.15rem; font-weight: 800; color: #2C3E50; margin-top: 10px; padding: 10px; background-color: #FFFFFF; border-radius: 5px; border: 1px solid #E0E5EC;'>🎯 Active Model Weights: {clean_label}</div>"
-
 # ==========================================
 # APP HEADER
 # ==========================================
@@ -366,7 +361,6 @@ with tab1:
         c1 = st.selectbox("📍 Select Country A", y_countries, index=y_countries.index("United States") if "United States" in y_countries else 0, key="t1_c1")
         r1 = df[df['Country'] == c1].iloc[0]
         st.markdown(f"### {r1['Flag']} {c1} Snapshot")
-        st.markdown("<div class='snapshot-box'>", unsafe_allow_html=True)
         st.metric("Macro Archetype", f"{r1['Active_Archetype']}")
         m2, m3, m4, m5 = st.columns(4)
         m2.metric("Active SoV Score", f"{r1['Active_Index_Score']:.1f}")
@@ -380,7 +374,6 @@ with tab1:
         if c2 != "(None)":
             r2 = df[df['Country'] == c2].iloc[0]
             st.markdown(f"### {r2['Flag']} {c2} Snapshot")
-            st.markdown("<div class='snapshot-box'>", unsafe_allow_html=True)
             st.metric("Macro Archetype", f"{r2['Active_Archetype']}")
             m2b, m3b, m4b, m5b = st.columns(4)
             m2b.metric("Active SoV Score", f"{r2['Active_Index_Score']:.1f}")
@@ -525,9 +518,7 @@ with tab3:
 with tab4:
     st.header("The \"What-If\" Simulator")
     st.markdown("""
-    Our baseline weights were determined by **Principal Component Analysis (PCA)**. PCA is a machine learning algorithm that mathematically discovers the true variance within the global economy to automatically weight each variable without human bias. 
-    
-    To see the effects of changes in these inputs, select a country and dynamically shift its core parameters—or override the global PCA weights—to see how these changes mathematically redefine that country within the global landscape.
+    Our baseline weights were determined by **Principal Component Analysis (PCA)**. PCA is a machine learning algorithm that mathematically discovers the true variance within the global economy to automatically weight each variable without human bias. To see the effects of changes in these inputs, select a country and dynamically shift its core parameters—or override the global PCA weights—to see how these changes mathematically redefine that country within the global landscape.
     """)
     st.divider()
     
