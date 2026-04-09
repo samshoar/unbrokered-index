@@ -175,7 +175,7 @@ for i in range(0, 101, 5):
     wi = (1 - a) * 0.7 + a * 33.333
     wa = (1 - a) * 46.8 + a * 33.333
     
-    label = f"PCA Weights ← Controls: {wc:.1f}% | Adoption: {wa:.1f}% | Inflation: {wi:.1f}% → Equal Weights"
+    label = f"Controls: {wc:.1f}% | Adoption: {wa:.1f}% | Inflation: {wi:.1f}%"
     slider_options.append(label)
     alpha_map[label] = a
 
