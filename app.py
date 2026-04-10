@@ -747,7 +747,6 @@ col_foot1, col_foot2 = st.columns(2)
 
 with col_foot1:
     st.markdown("#### 📚 Variable Definitions")
-    st.markdown(f"**Total Countries Analyzed:** {dataset_size}")
     st.markdown("""
     * **Store of Value (SoV) Index Score:** A composite 0-100 score assessing a population's macro-necessity for a store of value this is made up from the below variables. By default, the three below variables are weighted according to a Principal Component Analysis, however the user can use the slider or the "What if" tab to apply a different set of weights to the variables.
     * **Regulation (0-8):** Tracks the maturity and legality of a nation's formal digital asset frameworks (Atlantic Council).
@@ -763,5 +762,6 @@ with col_foot2:
     * **SoV Index:** Baseline weights are mathematically derived using **Principal Component Analysis (PCA)** to prioritize systemic closedness, actively removing human guessing.
     * **Machine Learning Archetypes:** Unsupervised **K-Means clustering ($k=4$)** calculates spatial distances to dynamically group countries into natural economic families, avoiding arbitrary 50/50 threshold lines.
     """)
+    st.markdown(f"**Total Countries Analyzed:** {dataset_size}")
 
 st.markdown("</div>", unsafe_allow_html=True)
