@@ -175,7 +175,7 @@ for i in range(0, 101, 5):
     wi = (1 - a) * 0.7 + a * 33.333
     wa = (1 - a) * 46.8 + a * 33.333
     
-    label = f"PCA Weights ← Controls: {wc:.1f}% | Adoption: {wa:.1f}% | Inflation: {wi:.1f}% → Equal Weights"
+    label = f"Closedness: {wc:.1f}% | Adoption: {wa:.1f}% | Inflation: {wi:.1f}%"
     slider_options.append(label)
     alpha_map[label] = a
 
@@ -290,6 +290,11 @@ cluster_map_active = {top_2_act[0][0]: "Grassroot Adopters", top_2_act[1][0]: "L
 df['Active_Archetype'] = kmeans_active.predict(cluster_scaled_active)
 df['Active_Archetype'] = df['Active_Archetype'].map(cluster_map_active)
 
+# Helper function to generate the permanent label block under sliders
+def get_permanent_label():
+    clean_label = st.session_state.model_slider.replace('PCA Weights ← ', '').replace(' → Equal Weights', '')
+    return f"<div style='text-align: center; font-size: 1.15rem; font-weight: 800; color: #2C3E50; margin-top: 10px; padding: 10px; background-color: #FFFFFF; border-radius: 5px; border: 1px solid #E0E5EC;'>Use slider to move from PCA weights ⬅️ to Equal Weights ➡️</div>"
+
 # ==========================================
 # APP HEADER
 # ==========================================
@@ -314,8 +319,9 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # TAB 1: VISUAL DASHBOARD
 # ==========================================
 with tab1:
+    st.markdown(get_permanent_label(), unsafe_allow_html=True)
     st.select_slider(
-        "**🕹️ Use slider to apply different model weights to the analysis**", 
+        "** **", 
         options=slider_options,
         key='slider_tab1',
         on_change=sync_sliders,
@@ -386,8 +392,9 @@ with tab1:
 # TAB 2: RAW DATA EXPLORER
 # ==========================================
 with tab2:
+    st.markdown(get_permanent_label(), unsafe_allow_html=True)
     st.select_slider(
-        "**🕹️ Use slider to apply different model weights to the analysis**", 
+        "** **", 
         options=slider_options,
         key='slider_tab2',
         on_change=sync_sliders,
@@ -413,23 +420,52 @@ with tab2:
     styled_df = df_tab2.style.apply(style_rows_by_archetype, axis=1)
     
     st.dataframe(styled_df, use_container_width=True, height=500, column_config={
-	   "Country_Flag":st.column_config.TextColumn("Country"),
-        "Active_Archetype": st.column_config.TextColumn("🏛️ Active Archetype"),
-        "Active_Index_Score": st.column_config.ProgressColumn("🎯 Active Score", min_value=0, max_value=100, format="%.1f"),
-        "PCA_Index_Score": st.column_config.NumberColumn("📊 Base PCA Score", format="%.1f"),
-        "Equal_Index_Score": st.column_config.NumberColumn("⚖️ Base Equal Score", format="%.1f"),
-        "regulation": st.column_config.NumberColumn("⚖️ Regulation (0-8)", format="%.1f"),
-        "Crypto_Adoption_Rank": st.column_config.NumberColumn("🏆 Adoption Rank"),
-        "Inflation": st.column_config.NumberColumn("💸 Inflation (%)", format="%.1f%%"),
-        "Financial_Closedness": st.column_config.NumberColumn("🏦 Raw Closedness Score", format="%.2f")
+        "Country_Flag": st.column_config.TextColumn(
+            "Country",
+            help="The country name and its ISO flag."
+        ),
+        "Active_Archetype": st.column_config.TextColumn(
+            "🏛️ Active Archetype",
+            help="The K-Means clustering classification (Grassroot Adopters, Leapfroggers, Tokenization Hubs, or Low Demand Economies) dynamically based on the current slider position."
+        ),
+        "Active_Index_Score": st.column_config.ProgressColumn(
+            "🎯 Active Score", 
+            min_value=0, max_value=100, format="%.1f",
+            help="The Store of Value Necessity Index score calculated dynamically based on the current slider weights."
+        ),
+        "PCA_Index_Score": st.column_config.NumberColumn(
+            "📊 Base PCA Score", format="%.1f",
+            help="The static baseline score calculated strictly using the Principal Component Analysis (PCA) weights."
+        ),
+        "Equal_Index_Score": st.column_config.NumberColumn(
+            "🟰 Equal Weights", format="%.1f",
+            help="The static baseline score calculated forcing a strictly equal 33.3% weight across all variables."
+        ),
+        "regulation": st.column_config.NumberColumn(
+            "⚖️ Regulation (0-8)", format="%.1f",
+            help="Tracks the maturity and legality of a nation's formal digital asset frameworks (0 = Lowest, 8 = Highest)."
+        ),
+        "Crypto_Adoption_Rank": st.column_config.NumberColumn(
+            "🏆 Adoption Rank",
+            help="Real-world utility and grassroots adoption of digital assets by everyday retail users. Rank 1 = Highest Global Adoption."
+        ),
+        "Inflation": st.column_config.NumberColumn(
+            "💸 Inflation (%)", format="%.1f%%",
+            help="The annual percentage change in the cost of domestically manufactured goods and services."
+        ),
+        "Financial_Closedness": st.column_config.NumberColumn(
+            "🏦 Closedness Score", format="%.2f",
+            help="Measures capital controls and restrictions on cross-border financial transactions. A higher positive number indicates stricter controls and a more closed economy."
+        )
     })
 
 # ==========================================
 # TAB 3: MACRO ARCHETYPES (INTERACTIVE)
 # ==========================================
 with tab3:
+    st.markdown(get_permanent_label(), unsafe_allow_html=True)
     st.select_slider(
-        "**🕹️ Use slider to apply different model weights to the analysis**", 
+        "** **", 
         options=slider_options,
         key='slider_tab3',
         on_change=sync_sliders,
