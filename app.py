@@ -748,7 +748,7 @@ col_foot1, col_foot2 = st.columns(2)
 with col_foot1:
     st.markdown("#### 📚 Variable Definitions")
     st.markdown("""
-    * **Store of Value (SoV) Index Score:** A composite 0-100 score assessing a population's macro-necessity for a store of value this is made up from the below variables. By default, the three below variables are weighted according to a Principal Component Analysis, however the user can use the slider or the "What if" tab to apply a different set of weights to the variables.
+    * **Store of Value (SoV) Index Score:** A composite 0-100 score assessing a population's macro-necessity for a store of value this is made up from the below variables. By default, the four variables below are weighted using Principal Component Analysis (PCA), which uses patterns in the data to determine the weight of each variable. Users can also adjust these weights using the slider or the “What if” tab.
     * **Regulation (0-8):** Tracks the maturity and legality of a nation's formal digital asset frameworks (Atlantic Council).
     * **Adoption Rank:** Real-world utility and adoption of digital assets by everyday retail users (Chainalysis). *Rank 1 = Highest Adoption.*
     * **Inflation (%):** The annual percentage change in the cost of domestically manufactured goods and services (World Bank).
