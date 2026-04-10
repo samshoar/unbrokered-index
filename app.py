@@ -290,11 +290,6 @@ cluster_map_active = {top_2_act[0][0]: "Grassroot Adopters", top_2_act[1][0]: "L
 df['Active_Archetype'] = kmeans_active.predict(cluster_scaled_active)
 df['Active_Archetype'] = df['Active_Archetype'].map(cluster_map_active)
 
-# Helper function to generate the permanent label block under sliders
-def get_permanent_label():
-    clean_label = st.session_state.model_slider.replace('PCA Weights ← ', '').replace(' → Equal Weights', '')
-    return f"<div style='text-align: center; font-size: 1.15rem; font-weight: 800; color: #2C3E50; margin-top: 10px; padding: 10px; background-color: #FFFFFF; border-radius: 5px; border: 1px solid #E0E5EC;'>🎯 Active Model Weights: {clean_label}</div>"
-
 # ==========================================
 # APP HEADER
 # ==========================================
@@ -319,7 +314,6 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # TAB 1: VISUAL DASHBOARD
 # ==========================================
 with tab1:
-    st.markdown("<div class='model-toggle'>", unsafe_allow_html=True)
     st.select_slider(
         "**🕹️ Use slider to apply different model weights to the analysis**", 
         options=slider_options,
@@ -327,7 +321,6 @@ with tab1:
         on_change=sync_sliders,
         args=('slider_tab1',)
     )
-    st.markdown(get_permanent_label(), unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
     fig_map = px.choropleth(
@@ -368,7 +361,7 @@ with tab1:
         st.markdown(f"### {r1['Flag']} {c1} Snapshot")
         st.metric("Macro Archetype", f"{r1['Active_Archetype']}")
         m2, m3, m4, m5 = st.columns(4)
-        m2.metric("Active SoV Score", f"{r1['Active_Index_Score']:.1f}")
+        m2.metric("Store of Value Index Score", f"{r1['Active_Index_Score']:.1f}")
         m3.metric("Regulation", f"{r1['regulation']:.1f}")
         m4.metric("Adoption", f"#{int(r1['Crypto_Adoption_Rank'])}")
         m5.metric("Inflation", f"{r1['Inflation']:.1f}%")
@@ -381,7 +374,7 @@ with tab1:
             st.markdown(f"### {r2['Flag']} {c2} Snapshot")
             st.metric("Macro Archetype", f"{r2['Active_Archetype']}")
             m2b, m3b, m4b, m5b = st.columns(4)
-            m2b.metric("Active SoV Score", f"{r2['Active_Index_Score']:.1f}")
+            m2b.metric("Store of Value Index Score", f"{r2['Active_Index_Score']:.1f}")
             m3b.metric("Regulation", f"{r2['regulation']:.1f}")
             m4b.metric("Adoption", f"#{int(r2['Crypto_Adoption_Rank'])}")
             m5b.metric("Inflation", f"{r2['Inflation']:.1f}%")
@@ -393,7 +386,6 @@ with tab1:
 # TAB 2: RAW DATA EXPLORER
 # ==========================================
 with tab2:
-    st.markdown("<div class='model-toggle'>", unsafe_allow_html=True)
     st.select_slider(
         "**🕹️ Use slider to apply different model weights to the analysis**", 
         options=slider_options,
@@ -401,7 +393,6 @@ with tab2:
         on_change=sync_sliders,
         args=('slider_tab2',)
     )
-    st.markdown(get_permanent_label(), unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
     display_cols = ['Country_Flag', 'Active_Archetype', 'Active_Index_Score', 'PCA_Index_Score', 'Equal_Index_Score', 'regulation', 'Crypto_Adoption_Rank', 'Inflation', 'Financial_Closedness']
@@ -422,6 +413,7 @@ with tab2:
     styled_df = df_tab2.style.apply(style_rows_by_archetype, axis=1)
     
     st.dataframe(styled_df, use_container_width=True, height=500, column_config={
+	   "Country_Flag":st.column_config.TextColumn("Country"),
         "Active_Archetype": st.column_config.TextColumn("🏛️ Active Archetype"),
         "Active_Index_Score": st.column_config.ProgressColumn("🎯 Active Score", min_value=0, max_value=100, format="%.1f"),
         "PCA_Index_Score": st.column_config.NumberColumn("📊 Base PCA Score", format="%.1f"),
@@ -436,7 +428,6 @@ with tab2:
 # TAB 3: MACRO ARCHETYPES (INTERACTIVE)
 # ==========================================
 with tab3:
-    st.markdown("<div class='model-toggle'>", unsafe_allow_html=True)
     st.select_slider(
         "**🕹️ Use slider to apply different model weights to the analysis**", 
         options=slider_options,
@@ -444,7 +435,6 @@ with tab3:
         on_change=sync_sliders,
         args=('slider_tab3',)
     )
-    st.markdown(get_permanent_label(), unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
     st.header("Propensity Archetypes in Clusters")
@@ -548,8 +538,8 @@ with tab4:
         sim_inf = st.slider("Inflation (%)", -5.0, 150.0, step=1.0, key="sim_inf",
                             help="The annual percentage change in the cost of domestically manufactured goods and services via the GDP deflator (World Bank).")
         
-        sim_close = st.slider("Capital Controls / Closedness Score (-2.5 to 2.5)", -2.5, 2.5, step=0.1, key="sim_close",
-                              help="Adapted from the Chinn-Ito Index. -2.5 represents fully open capital markets, while 2.5 represents strict capital controls (closed economies).")
+        sim_close = st.slider("Financial Closedness Score (-2.5 to 2.5)", -2.5, 2.5, step=0.1, key="sim_close",
+                              help="Adapted from the Chinn-Ito Index. -2.5 represents fully open capital markets, while 2.5 represents strictly closed economies closed economies.")
         
         sim_adopt = st.slider("Crypto Adoption Rank (1 = Highest)", 1, 150, step=1, key="sim_adopt",
                               help="Real-world utility and adoption of digital assets by everyday retail users (Chainalysis). Rank 1 = Highest Adoption.")
@@ -565,11 +555,11 @@ with tab4:
         
         st.caption("Shift the PCA variance weights. The system caps combinations to strictly equal 100%.")
         
-        st.slider("Weight: Capital Controls (%)", 0.0, 100.0, step=0.1, key='w_close', on_change=update_weights, args=('close',),
-                  help="Override the PCA variance weight for Financial Closedness/Capital Controls.")
+        st.slider("Weight: Financial Closeness (%)", 0.0, 100.0, step=0.1, key='w_close', on_change=update_weights, args=('close',),
+                  help="Override the PCA variance weight for Financial Closedness.")
         
-        st.slider("Weight: Grassroots Adoption (%)", 0.0, 100.0, step=0.1, key='w_adopt', on_change=update_weights, args=('adopt',),
-                  help="Override the PCA variance weight for Grassroots Crypto Adoption.")
+        st.slider("Weight: Crypto Adoption Score(%)", 0.0, 100.0, step=0.1, key='w_adopt', on_change=update_weights, args=('adopt',),
+                  help="Override the PCA variance weight for the Crypto Adoption Score.")
         
         w_close = st.session_state.w_close
         w_adopt = st.session_state.w_adopt
@@ -669,16 +659,16 @@ with tab5:
     st.markdown("This section describes how the data in our pipeline is assembled, how missing values are treated at each step, how variables are standardized, and how our dimensionality reduction (PCA) and K-Means clustering models are specified.")
     
     st.markdown("### 1. Import and Merge")
-    st.markdown(f"The analysis starts from six raw data sources to ensure a comprehensive macroeconomic snapshot of {dataset_size} countries:")
+    st.markdown(f"The analysis starts from four raw data sources and our own assessments to ensure a comprehensive macroeconomic snapshot of {dataset_size} countries:")
+    
     st.markdown("""
-    * **Crypto Adoption (Chainalysis):** Contains a rank measure of real-world cryptocurrency adoption by country (1 = highest adoption).
-    * **Mobile Connectivity (GSMA):** Provides a mobile connectivity index by country and year.
-    * **Financial Openness (Chinn–Ito):** Provides the capital account openness index. We mathematically invert this metric to measure **Financial Closedness**.
-    * **World Bank WDI:** Provides macroeconomic indicators, specifically the annual **Inflation** percentage (via the GDP deflator).
-    * **Regulatory Frameworks (Atlantic Council):** Tracks the maturity and legality of formal digital asset frameworks on a continuous scale of 0 to 8.
-    * **Banking Concentration (GFDD) & Market Cap:** Measures 5-bank asset concentration and total value per capita to assess institutional wealth and market dominance.
-    """)
-    st.markdown("The harmonized dataframes are merged via outer joins on `['ISO Code', 'Year']`. Every country–year present in any source appears in the merged dataframe. If a given source has no observation for that country–year, its columns contribute `NaN` for that row. At this stage, nothing is dropped; missing values are allowed to exist and are managed downstream.")
+    * **The Chinn-Ito index (KAOPEN):** An index measuring a country’s degree of capital account openness. The index was initially introduced in Chinn and Ito (Journal of Development Economics, 2006). KAOPEN is based on the binary dummy variables that codify the tabulation of restrictions on cross-border financial transactions reported in the IMF’s Annual Report on Exchange Arrangements and Exchange Restrictions (AREAER). This update is based on AREAER 2024, which contains the information on regulatory restrictions on cross-border financial transactions as of the end of 2023.More information on its construction can be found in: <br><br>“[A New Measure of Financial Openness](http://web.pdx.edu/~ito/kaopen_Chinn-Ito_hi0523.pdf)”, Journal of Comparative Policy Analysis, Volume 10, Issue 3 September 2008, p. 309 - 322. Note that this paper uses the 2007 version of the dataset (containing data up to only 2005), which will differ from the current version of the dataset. The full and current dataset that we used is available at [Chinn-Ito website](http://web.pdx.edu/~ito/Chinn-Ito_website.htm).<br><br>
+    * **Regulatory Frameworks (Atlantic Council data + Coinbase Institute assessment):** Tracks the maturity and legality of formal digital asset frameworks on a continuous scale of 0 to 8. The 0 to 8 scale has been developed by looking at the Atlantic Council’s assessment of a country's legal framework—based on the legal status of cryptocurrencies, their taxation, AML/CFT, Consumer Protection, and Licensing—as well as our in-house regulatory team’s assessment of a country's stablecoin regulations. More information on the Atlantic Council dataset can be found in: <br><br>Atlantic Council, "[Cryptocurrency Regulation Tracker](https://www.atlanticcouncil.org/programs/geoeconomics-center/cryptoregulationtracker/)," GeoEconomics Center, July 2025.<br><br>
+    * **Crypto Adoption (Chainalysis):** Contains a rank measure of real-world cryptocurrency adoption by country (1 = highest adoption). The Chainalysis report holds the Global Crypto Adoption Index—a metric designed to identify where “grassroots” adoption is strongest by weighting on-chain activity against population size and purchasing power parity (PPP). For our ranking, we used the “Overall index ranking” variable. The full report and dataset can be found in:<br><br> Chainalysis. [The 2023 Geography of Cryptocurrency Report](https://www.chainalysis.com/blog/2023-global-crypto-adoption-index/). New York: Chainalysis, October 2023.<br><br>
+    * **World Bank WDI:** Provides macroeconomic indicators, specifically the annual Inflation percentage (via the GDP deflator). Lastly, we use the inflation indicator from the World Bank’s World Development Indicators. The full dataset can be found in: <br><br>World Bank. "[Inflation, consumer prices (annual %).](https://data.worldbank.org/indicator/FP.CPI.TOTL.ZG)" World Development Indicators. Accessed April 10, 2026.
+    """, unsafe_allow_html=True)
+    
+    st.markdown("The harmonized dataframes are merged via outer joins on `['ISO Code', 'Year']`. Every country present in any source appears in the merged dataframe. If a given source has no observation for that country, its columns contribute `NaN` for that row. At this stage, nothing is dropped; missing values are allowed to exist and are managed downstream.")
 
     st.divider()
 
@@ -687,7 +677,6 @@ with tab5:
     After merging, we ensure that every row corresponds to a valid country within the intended sample window:
     * **Time Restriction:** We retain only observations with `Year = 2023`. All earlier years are removed.
     * **Converting to Numeric:** Raw data sources often represent missing values as strings (e.g., `".."`). The script replaces these literal strings with `NaN` and applies `pd.to_numeric(..., errors='coerce')`. This standardizes all non-ID variables as numeric and uses `NaN` as the single missing value marker.
-    * **Safe Imputation:** To prevent valid countries from dropping out of the downstream Institutional Matrix, missing values for `Banking_Concentration_5` are filled with the global median, and missing values for `Value_per_Capita` are filled with 0.
     * **Retaining Outliers:** Hyper-outliers (such as Venezuela and Zimbabwe) are intentionally kept in the dataset. No Winsorization or data clipping is applied, ensuring the model fully accounts for the mathematical severity of global macroeconomic extremes.
     * **Core NA Filter:** Finally, we perform a minimal essential NA filter. We drop any row where one of the core modeling variables is missing: `Financial_Closedness`, `Inflation`, `Crypto_Adoption_Rank`, or `regulation`. This guarantees that every row in the cleaned panel has complete data for the primary spatial mapping.
     """)
@@ -698,7 +687,7 @@ with tab5:
     st.markdown("""
     Because our variables are measured in completely different units (ranks, percentages, and indices), we must standardize them before combining them into a single metric.
     * Using scikit-learn’s `StandardScaler`, we compute the mean and standard deviation across the cleaned sample for the three core variables: `Financial_Closedness`, `Inflation`, and `Crypto_Adoption_Rank`. This rescales each variable so that it has a mean of 0 and a variance of 1.
-    * Instead of manually guessing which factor drives adoption, we utilize **Principal Component Analysis (PCA)**. The PCA algorithm discovers the true variance within the global economy and automatically assigns weights to our standardized variables. The baseline PCA model applies weights of **52.5% to Closedness**, **46.8% to Adoption**, and **0.7% to Inflation**. 
+    * Instead of manually guessing which factor drives adoption, we utilize **Principal Component Analysis (PCA)**. The PCA algorithm discovers the true variance within the global economy and automatically assigns weights to our standardized variables. The baseline PCA model applies weights of **52.5% to Closedness**, **46.8% to Adoption**, and **0.7% to Inflation**. A more in depth explanation of the Principal Component Analysis can be found in: [Greenacre, M., Groenen, P.J.F., Hastie, T. et al. Principal component analysis. Nat Rev Methods Primers 2, 100 (2022)](https://doi.org/10.1038/s43586-022-00184-w).
     * We also calculate an **Equal Weights Model**, forcing a strict 33.3% weight across all three variables to isolate and highlight the impact of extreme inflation.
     * The raw scores from both models are then min-max normalized onto a clean **0 to 100 Store of Value (SoV) Index Score**, where 100 represents the highest macroeconomic necessity for unbrokered assets.
     """)
@@ -711,20 +700,9 @@ with tab5:
     1. We isolate the two mapping axes: The `regulation` score (X-Axis) and the `Index_Score` (Y-Axis).
     2. We apply `StandardScaler` to both axes. This is critical: it ensures that the larger 0-100 scale of the Y-Axis does not mathematically overpower the smaller 0-8 scale of the X-Axis during distance calculations.
     3. We instruct the algorithm to find exactly four clusters (`n_clusters=4`). The algorithm measures the spatial distance between every country and organically groups them based on mathematical density.
-    4. The coordinates of the resulting four centroids are mathematically sorted into quadrants (Top-Left, Top-Right, Bottom-Left, Bottom-Right) and assigned to their respective behavioral labels: **Grassroot Adopters**, **Leapfroggers**, **Low Demand Economies**, and **Tokenization Hubs**.
+    4. The coordinates of the resulting four centroids are mathematically sorted into quadrants (Top-Left, Top-Right, Bottom-Left, Bottom-Right) and assigned to their respective behavioral labels: **Grassroot Adopters**, **Leapfroggers**, **Low Demand Economies**, and **Tokenization Hubs**. A more in depth explanation can be found in: [Chris Piech, "K-Means Clustering Algorithm," CS221: Artificial Intelligence: Principles and Techniques, Stanford University](https://stanford.edu/~cpiech/cs221/handouts/kmeans.html).
     """)
     
-    st.divider()
-
-    st.markdown("### 5. The Institutional Matrix (\"Why vs. Who\")")
-    st.markdown("""
-    We calculate a separate, third behavioral model that abandons formal regulation entirely to measure underlying institutional dynamics.
-    1. Five input variables (`Value_per_Capita`, `Inflation`, `Financial_Closedness`, `Banking_Concentration_5`, and `Crypto_Adoption_Rank`) are independently standardized into Z-Scores.
-    2. **The Y-Axis ("Why" - Survival vs. Optimization):** We calculate `Z_Value_per_Capita - Z_Inflation - Z_Financial_Closedness`. High wealth pulls a country UP (Optimization), while high inflation and financial closedness pull it DOWN (Survival).
-    3. **The X-Axis ("Who" - Market vs. Government):** We calculate `Z_Banking_Concentration + Z_Crypto_Adoption_Rank`. High banking concentration pulls a country RIGHT (State-Driven), while high grassroots adoption ranks pull it LEFT (Market-Driven).
-    4. We apply `StandardScaler` to these new X and Y coordinates and run the K-Means algorithm (`n_clusters=4`) to dynamically map countries into four distinct institutional boxes: **The Gridlocked Giants**, **Jurisdictional Arbitrageurs**, **Life-Raft Leapfroggers**, and **Sovereign Controllers**.
-    """)
-
 # ==========================================
 # GLOBAL FOOTER (Displays on all tabs)
 # ==========================================
@@ -735,7 +713,7 @@ with col_foot1:
     st.markdown("#### 📚 Variable Definitions")
     st.markdown(f"**Total Countries Analyzed:** {dataset_size}")
     st.markdown("""
-    * **SoV Index Score:** A composite 0-100 score assessing a population's macro-necessity for a store of value.
+    * **Store of Value (SoV) Index Score:** A composite 0-100 score assessing a population's macro-necessity for a store of value this is made up from the below variables. By default, the three below variables are weighted according to a Principal Component Analysis, however the user can use the slider or the "What if" tab to apply a different set of weights to the variables.
     * **Regulation (0-8):** Tracks the maturity and legality of a nation's formal digital asset frameworks (Atlantic Council).
     * **Adoption Rank:** Real-world utility and adoption of digital assets by everyday retail users (Chainalysis). *Rank 1 = Highest Adoption.*
     * **Inflation (%):** The annual percentage change in the cost of domestically manufactured goods and services (World Bank).
@@ -746,7 +724,7 @@ with col_foot2:
     st.markdown("#### ⚙️ Quick Methodology Summary")
     st.markdown("""
     * **Data Pipeline:** Aggregates macro data from 6 leading global institutions. Hyper-outliers (e.g. VEN, ZWE) are intentionally retained to accurately reflect global macroeconomic extremes without clipping.
-    * **SoV Necessity Index:** Baseline weights are mathematically derived using **Principal Component Analysis (PCA)** to prioritize systemic closedness, actively removing human guessing.
+    * **SoV Index:** Baseline weights are mathematically derived using **Principal Component Analysis (PCA)** to prioritize systemic closedness, actively removing human guessing.
     * **Machine Learning Archetypes:** Unsupervised **K-Means clustering ($k=4$)** calculates spatial distances to dynamically group countries into natural economic families, avoiding arbitrary 50/50 threshold lines.
     """)
 
