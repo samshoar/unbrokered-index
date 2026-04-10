@@ -760,7 +760,7 @@ with col_foot2:
     st.markdown("""
     * **Data Pipeline:** Aggregates macro data from 6 leading global institutions. Hyper-outliers (e.g. VEN, ZWE) are intentionally retained to accurately reflect global macroeconomic extremes without clipping.
     * **SoV Index:** Baseline weights are mathematically derived using **Principal Component Analysis (PCA)** to prioritize systemic closedness, actively removing human guessing.
-    * **Machine Learning Archetypes:** Unsupervised **Machine Learning Archetypes: We use a pattern-recognition algorithm that groups countries into four natural clusters based on shared similarities and patters they are.
+    * **Machine Learning Archetypes:** We use a pattern-recognition algorithm that groups countries into four natural clusters based on shared similarities and patters they are.
     """)
     st.markdown(f"**Total Countries Analyzed:** {dataset_size}")
 
