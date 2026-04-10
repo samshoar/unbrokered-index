@@ -293,7 +293,7 @@ df['Active_Archetype'] = df['Active_Archetype'].map(cluster_map_active)
 # Helper function to generate the permanent label block under sliders
 def get_permanent_label():
     clean_label = st.session_state.model_slider.replace('PCA Weights ← ', '').replace(' → Equal Weights', '')
-    return f"<div style='text-align: center; font-size: 1.15rem; font-weight: 800; color: #2C3E50; margin-top: 10px; padding: 10px; background-color: #FFFFFF; border-radius: 5px; border: 1px solid #E0E5EC;'>Use slider to move from PCA weights ⬅️ to Equal Weights ➡️</div>"
+    return f"<div style='text-align: center; font-size: 1.15rem; font-weight: 800; color: #2C3E50; margin-top: 10px; padding: 10px; background-color: #FFFFFF; border-radius: 5px; border: 1px solid #E0E5EC;'>Use the slider to change how the factors are balanced. Move the slider to see the factors go from PCA-based to equally weighted</div>"
 
 # ==========================================
 # APP HEADER
@@ -749,7 +749,7 @@ with col_foot1:
     st.markdown("#### 📚 Variable Definitions")
     st.markdown("""
     * **Store of Value (SoV) Index Score:** A composite 0-100 score assessing a population's macro-necessity for a store of value this is made up from the below variables. By default, the four variables below are weighted using Principal Component Analysis (PCA), which uses patterns in the data to determine the weight of each variable. Users can also adjust these weights using the slider or the “What if” tab.
-    * **Regulation (0-8):** Tracks the maturity and legality of a nation's formal digital asset frameworks (Atlantic Council).
+    * **Regulatory Frameworks:** Tracks the maturity and legality of formal digital asset frameworks on a continuous scale of 0 to 8 (Atlantic Council data + Coinbase Institute assessment).
     * **Adoption Rank:** Real-world utility and adoption of digital assets by everyday retail users (Chainalysis). *Rank 1 = Highest Adoption.*
     * **Inflation (%):** The annual percentage change in the cost of domestically manufactured goods and services (World Bank).
     * **Financial Closedness:** Measures capital controls and restrictions on cross-border financial transactions (Chinn-Ito Index, inverted).
