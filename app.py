@@ -175,7 +175,7 @@ for i in range(0, 101, 5):
     wi = (1 - a) * 0.7 + a * 33.333
     wa = (1 - a) * 46.8 + a * 33.333
     
-    label = f"Closedness: {wc:.1f}% | Adoption: {wa:.1f}% | Inflation: {wi:.1f}%"
+    label = f"Closedness: {wc:.1f}% | Crypto Adoption: {wa:.1f}% | Inflation: {wi:.1f}%"
     slider_options.append(label)
     alpha_map[label] = a
 
@@ -302,8 +302,8 @@ col_logo, col_text = st.columns([1, 4])
 with col_logo:
     st.image("https://images.ctfassets.net/sygt3q11s4a9/3x7SlEtglsK24xKCI4klI5/ce347e6caf775dd7d8a7759619577871/1_oOgJJrP9DcjOLpq5YLzsFQ.png?fm=avif&w=1400&h=712&q=65", width=200)
 with col_text:
-    st.markdown("<h1 style='color: #0052FF; margin-bottom: 0px;'>Tokenized Capital Markets Propensity Insights</h1>", unsafe_allow_html=True)
     st.markdown("<h2 style='color: #2C3E50; margin-top: -5px; font-size: 1.8rem;'>From the Unbanked to the Unbrokered</h2>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color: #0052FF; margin-bottom: 0px;'>Tokenized Capital Markets Propensity Insights</h1>", unsafe_allow_html=True)
 
 st.markdown("<p style='font-size: 1.1rem; color: #555; margin-bottom: 20px;'>Insights into the likely adoption drivers of tokenized capital markets.</p>", unsafe_allow_html=True)
 
@@ -336,7 +336,7 @@ with tab1:
             'regulation': 'Regulation', 
             'Inflation': 'Inflation (%)', 
             'Financial_Closedness': 'Financial Closedness', 
-            'Crypto_Adoption_Rank': 'Adoption Rank',
+            'Crypto_Adoption_Rank': 'Crypto Adoption Rank',
             'Active_Archetype': 'Archetype'
         },
         hover_data={
@@ -369,7 +369,7 @@ with tab1:
         m2, m3, m4, m5 = st.columns(4)
         m2.metric("Store of Value Index Score", f"{r1['Active_Index_Score']:.1f}")
         m3.metric("Regulation", f"{r1['regulation']:.1f}")
-        m4.metric("Adoption", f"#{int(r1['Crypto_Adoption_Rank'])}")
+        m4.metric("Crypto Adoption", f"#{int(r1['Crypto_Adoption_Rank'])}")
         m5.metric("Inflation", f"{r1['Inflation']:.1f}%")
         st.markdown("</div>", unsafe_allow_html=True)
 
@@ -382,7 +382,7 @@ with tab1:
             m2b, m3b, m4b, m5b = st.columns(4)
             m2b.metric("Store of Value Index Score", f"{r2['Active_Index_Score']:.1f}")
             m3b.metric("Regulation", f"{r2['regulation']:.1f}")
-            m4b.metric("Adoption", f"#{int(r2['Crypto_Adoption_Rank'])}")
+            m4b.metric("Crypto Adoption", f"#{int(r2['Crypto_Adoption_Rank'])}")
             m5b.metric("Inflation", f"{r2['Inflation']:.1f}%")
             st.markdown("</div>", unsafe_allow_html=True)
         else:
@@ -446,8 +446,8 @@ with tab2:
             help="Tracks the maturity and legality of a nation's formal digital asset frameworks (0 = Lowest, 8 = Highest)."
         ),
         "Crypto_Adoption_Rank": st.column_config.NumberColumn(
-            "🏆 Adoption Rank",
-            help="Real-world utility and grassroots adoption of digital assets by everyday retail users. Rank 1 = Highest Global Adoption."
+            "🏆 Crypto Adoption Rank",
+            help="Real-world utility and grassroots adoption of digital assets by everyday retail users. Rank 1 = Highest Global Crypto Adoption."
         ),
         "Inflation": st.column_config.NumberColumn(
             "💸 Inflation (%)", format="%.1f%%",
@@ -725,12 +725,12 @@ with tab5:
     * Using scikit-learn’s `StandardScaler`, we compute the mean and standard deviation across the cleaned sample for the three core variables: `Financial_Closedness`, `Inflation`, and `Crypto_Adoption_Rank`. This rescales each variable so that it has a mean of 0 and a variance of 1.
     * Instead of manually guessing which factor drives adoption, we utilize **Principal Component Analysis (PCA)**. The PCA algorithm discovers the true variance within the global economy and automatically assigns weights to our standardized variables. The baseline PCA model applies weights of **52.5% to Closedness**, **46.8% to Adoption**, and **0.7% to Inflation**. A more in depth explanation of the Principal Component Analysis can be found in: [Greenacre, M., Groenen, P.J.F., Hastie, T. et al. Principal component analysis. Nat Rev Methods Primers 2, 100 (2022)](https://doi.org/10.1038/s43586-022-00184-w).
     * We also calculate an **Equal Weights Model**, forcing a strict 33.3% weight across all three variables to isolate and highlight the impact of extreme inflation.
-    * The raw scores from both models are then min-max normalized onto a clean **0 to 100 Store of Value (SoV) Index Score**, where 100 represents the highest macroeconomic necessity for unbrokered assets.
+    * The raw scores from both models are then min-max normalized onto a clean **0 to 100 Store of Value (SoV) Index Score**, where 100 represents the highest macroeconomic necessity for digital assets.
     """)
     
     st.divider()
 
-    st.markdown("### 4. K-Means Clustering Specification (Macro Archetypes)")
+    st.markdown("### 4. K-Means Clustering Specification (Propensity Archetypes)")
     st.markdown("""
     To objectively classify countries into our four geopolitical archetypes without relying on arbitrary human threshold lines, we utilize unsupervised **K-Means Clustering**:
     1. We isolate the two mapping axes: The `regulation` score (X-Axis) and the `Index_Score` (Y-Axis).
@@ -748,9 +748,9 @@ col_foot1, col_foot2 = st.columns(2)
 with col_foot1:
     st.markdown("#### 📚 Variable Definitions")
     st.markdown("""
-    * **Store of Value (SoV) Index Score:** A composite 0-100 score assessing a population's macro-necessity for a store of value this is made up from the below variables. By default, the four variables below are weighted using Principal Component Analysis (PCA), which uses patterns in the data to determine the weight of each variable. Users can also adjust these weights using the slider or the “What if” tab.
+    * **Store of Value (SoV) Index Score:** A composite 0-100 score assessing a population's macro-necessity for a store of value this is made up from the below variables. By default, the Crypto Adoption Rank, Inflation data, and Financial Closedness value are weighted using Principal Component Analysis (PCA), which uses patterns in the data to determine the weight of each variable. Users can also adjust these weights using the slider or the “What if” tab.
     * **Regulatory Frameworks:** Tracks the maturity and legality of formal digital asset frameworks on a continuous scale of 0 to 8 (Atlantic Council data + Coinbase Institute assessment).
-    * **Adoption Rank:** Real-world utility and adoption of digital assets by everyday retail users (Chainalysis). *Rank 1 = Highest Adoption.*
+    * **Crypto Adoption Rank:** Real-world utility and adoption of digital assets by everyday retail users (Chainalysis). *Rank 1 = Highest Crypto Adoption.*
     * **Inflation (%):** The annual percentage change in the cost of domestically manufactured goods and services (World Bank).
     * **Financial Closedness:** Measures capital controls and restrictions on cross-border financial transactions (Chinn-Ito Index, inverted).
     """)
@@ -760,7 +760,7 @@ with col_foot2:
     st.markdown("""
     * **Data Pipeline:** Aggregates macro data from 6 leading global institutions. Hyper-outliers (e.g. VEN, ZWE) are intentionally retained to accurately reflect global macroeconomic extremes without clipping.
     * **SoV Index:** Baseline weights are mathematically derived using **Principal Component Analysis (PCA)** to prioritize systemic closedness, actively removing human guessing.
-    * **Machine Learning Archetypes:** We use a pattern-recognition algorithm that groups countries into four natural clusters based on shared similarities and patters they are.
+    * **Machine Learning Archetypes:** Unsupervised **Machine Learning Archetypes: We use a pattern-recognition algorithm that groups countries into four natural clusters based on shared similarities and patters they are.
     """)
     st.markdown(f"**Total Countries Analyzed:** {dataset_size}")
 
