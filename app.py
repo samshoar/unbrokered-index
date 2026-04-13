@@ -310,7 +310,7 @@ st.markdown("<p style='font-size: 1.1rem; color: #555; margin-bottom: 20px;'>Ins
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "🗺️ Visual Dashboard", 
     "📊 Raw Data Explorer", 
-    "🧩 Macro Archetypes",
+    "🧩 Propensity Archetypes",
     "🎛️ The \"What-If\" Simulator",
     "📋 Methodology"
 ])
@@ -365,7 +365,7 @@ with tab1:
         c1 = st.selectbox("📍 Select Country A", y_countries, index=y_countries.index("United States") if "United States" in y_countries else 0, key="t1_c1")
         r1 = df[df['Country'] == c1].iloc[0]
         st.markdown(f"### {r1['Flag']} {c1} Snapshot")
-        st.metric("Macro Archetype", f"{r1['Active_Archetype']}")
+        st.metric("Propensity Archetype", f"{r1['Active_Archetype']}")
         m2, m3, m4, m5 = st.columns(4)
         m2.metric("Store of Value Index Score", f"{r1['Active_Index_Score']:.1f}")
         m3.metric("Regulation", f"{r1['regulation']:.1f}")
@@ -378,7 +378,7 @@ with tab1:
         if c2 != "(None)":
             r2 = df[df['Country'] == c2].iloc[0]
             st.markdown(f"### {r2['Flag']} {c2} Snapshot")
-            st.metric("Macro Archetype", f"{r2['Active_Archetype']}")
+            st.metric("Propensity Archetype", f"{r2['Active_Archetype']}")
             m2b, m3b, m4b, m5b = st.columns(4)
             m2b.metric("Store of Value Index Score", f"{r2['Active_Index_Score']:.1f}")
             m3b.metric("Regulation", f"{r2['regulation']:.1f}")
@@ -460,7 +460,7 @@ with tab2:
     })
 
 # ==========================================
-# TAB 3: MACRO ARCHETYPES (INTERACTIVE)
+# TAB 3: PROPENSITY ARCHETYPES (INTERACTIVE)
 # ==========================================
 with tab3:
     st.markdown(get_permanent_label(), unsafe_allow_html=True)
@@ -502,7 +502,7 @@ with tab3:
         yaxis_title="<b>Store of Value Necessity Index (Active Model)</b>",
         xaxis=dict(range=[-0.5, 8.5], tickmode='linear', tick0=0, dtick=1, showgrid=False, zeroline=False),
         yaxis=dict(range=[-5, 105], showgrid=False, zeroline=False),
-        plot_bgcolor="white", height=700, legend_title_text="Macro Archetypes", margin=dict(t=30, b=30, l=30, r=30)
+        plot_bgcolor="white", height=700, legend_title_text="Propensity Archetypes", margin=dict(t=30, b=30, l=30, r=30)
     )
 
     st.plotly_chart(fig_quad, use_container_width=True)
@@ -760,7 +760,7 @@ with col_foot2:
     st.markdown("""
     * **Data Pipeline:** Aggregates macro data from 6 leading global institutions. Hyper-outliers (e.g. VEN, ZWE) are intentionally retained to accurately reflect global macroeconomic extremes without clipping.
     * **SoV Index:** Baseline weights are mathematically derived using **Principal Component Analysis (PCA)** to prioritize systemic closedness, actively removing human guessing.
-    * **Machine Learning Archetypes:** Unsupervised **Machine Learning Archetypes: We use a pattern-recognition algorithm that groups countries into four natural clusters based on shared similarities and patters they are.
+    * **Machine Learning Archetypes:** Unsupervised Machine Learning Archetypes: We use a pattern-recognition algorithm that groups countries into four natural clusters based on shared similarities and patters they are.
     """)
     st.markdown(f"**Total Countries Analyzed:** {dataset_size}")
 
